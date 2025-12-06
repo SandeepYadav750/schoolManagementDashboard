@@ -1,9 +1,25 @@
+import Announcement from "@/components/Announcement";
+import BigCalender from "@/components/BigCalender";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+
 const ParentPage = () => {
   return (
     <>
-      <h1> Parent Page</h1>
+      <div className="flex gap-4 flex-col md:flex-row p-4">
+        {/* left side */}
+        <div className="w-full md:w-2/3 h-full flex flex-col gap-8 bg-white rounded-md p-4">
+          <div className="mb-4 ">
+            <span className="text-lg font-semibold">Shedule (Arun Kumar)</span>
+            <BigCalender />
+          </div>
+        </div>
+        {/* right side */}
+        <div className="w-full md:w-1/3 flex flex-col gap-8">
+          <Announcement />
+        </div>
+      </div>
     </>
-  )
-}
+  );
+};
 
 export default ParentPage;

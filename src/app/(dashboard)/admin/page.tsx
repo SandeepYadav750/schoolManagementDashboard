@@ -1,7 +1,7 @@
 import Attendance from "@/components//AttendanceBarChart";
 import Announcement from "@/components/Announcement";
 import CountRadialChart from "@/components/CountRadialChart";
-import EvenetCalander from "@/components/EvenetCalander";
+import EvenetCalander from "@/components/EventCalander";
 import FinanceChart from "@/components/FinanceLineChart";
 import UseCard from "@/components/UseCard";
 
