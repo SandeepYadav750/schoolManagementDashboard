@@ -1,6 +1,5 @@
 import Announcement from "@/components/Announcement";
 import BigCalender from "@/components/BigCalender";
-import "react-big-calendar/lib/css/react-big-calendar.css";
 
 const TeacherPage = () => {
   return (
