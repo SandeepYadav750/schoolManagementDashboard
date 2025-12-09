@@ -1,3 +1,4 @@
+import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
@@ -72,15 +73,19 @@ const ResultsListpage = () => {
       <td className="hidden md:table-cell text-xs md:text-sm">{item.date}</td>
       <td>
         <div className="flex items-center gap-2">
-          <Link href={`/list/student/${item.id}`}>
+          {/* <Link href={`/list/student/${item.id}`}>
             <button className="rounded-full w-7 h-7 bg-sanikaSky flex items-center justify-center ">
               <Image src="/edit.png" alt="" width={14} height={14} />
             </button>
-          </Link>
+          </Link> */}
           {role === "admin" && (
-            <button className="rounded-full w-7 h-7 bg-sanikaPurple flex items-center justify-center ">
-              <Image src="/delete.png" alt="" width={14} height={14} />
-            </button>
+            // <button className="rounded-full w-7 h-7 bg-sanikaPurple flex items-center justify-center ">
+            //   <Image src="/delete.png" alt="" width={14} height={14} />
+            // </button>
+            <>
+              <FormModal table="result" type="update" data={item} />
+              <FormModal table="result" type="delete" id={item.id} />
+            </>
           )}
         </div>
       </td>
@@ -103,9 +108,12 @@ const ResultsListpage = () => {
                 <Image src="/sort.png" alt="filter" width={14} height={14} />
               </button>
               {role === "admin" && (
-                <button className="w-8 h-8 flex items-center justify-center rounded-full bg-sanikaYellow">
-                  <Image src="/plus.png" alt="filter" width={14} height={14} />
-                </button>
+                // <button className="w-8 h-8 flex items-center justify-center rounded-full bg-sanikaYellow">
+                //   <Image src="/plus.png" alt="filter" width={14} height={14} />
+                // </button>
+                <>
+                  <FormModal table="result" type="create" />
+                </>
               )}
             </div>
           </div>
