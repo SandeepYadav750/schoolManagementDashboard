@@ -1,5 +1,6 @@
 import Announcement from "@/components/Announcement";
 import BigCalender from "@/components/BigCalender";
+import FormModal from "@/components/FormModal";
 import PerformancePieCharts from "@/components/PerformancePieCharts";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,7 +13,7 @@ const SingleStudentPage = () => {
         <div className="w-full md:w-2/3">
           {/* top */}
           <div className=" flex flex-col xl:flex-row gap-4">
-            <div className="bg-sanikaSky p-4 rounded-md flex-1 flex gap-4">
+            <div className="bg-sanikaPurple p-4 rounded-md flex-1 flex gap-4">
               <div className="w-1/3 ">
                 <Image
                   src="https://images.pexels.com/photos/2888150/pexels-photo-2888150.jpeg?auto=compress&cs=tinysrgb&w=1200"
@@ -23,7 +24,31 @@ const SingleStudentPage = () => {
                 />
               </div>
               <div className="w-2/3 flex flex-col gap-2">
-                <h1 className="text-xl font-semibold">Shivik Singh yadav </h1>
+                <h1 className="text-xl font-semibold flex items-center gap-2">
+                  Shivik Singh yadav
+                  <span className="bg-sanikaPurple">
+                    <FormModal
+                      type="update"
+                      table="student"
+                      data={{
+                        id: 1,
+                        teacherId: "1234567890",
+                        userName: "Shivik Singh Yadav",
+                        firstName: "Shivik Singh",
+                        lastName: "Yadav",
+                        email: "shiv@gmail.com",
+                        password: "Shiv123",
+                        photo:
+                          "https://images.pexels.com/photos/2888150/pexels-photo-2888150.jpeg?auto=compress&cs=tinysrgb&w=1200",
+                        phone: "1234567890",
+                        subjects: ["Math", "Geometry"],
+                        classes: ["1B", "2A", "3C"],
+                        address: "123 Main St, Anytown, USA",
+                        bloodType: "B+",
+                      }}
+                    />
+                  </span>
+                </h1>
                 <p className="text-xs text-gray-500">
                   Lorem Ipsum is simply dummy text of the printing and
                   typesetting industry.
