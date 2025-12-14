@@ -7,15 +7,14 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 
 const TeacherForm = dynamic(() => import("./Forms/TeacherForm"), {
-  loading: () => <h1>Loading...</h1>
+  loading: () => <h1>Loading...</h1>,
 });
 const StudentForm = dynamic(() => import("./Forms/StudentForm"), {
-  loading: () => <h1>Loading...</h1>
+  loading: () => <h1>Loading...</h1>,
 });
 const ParentForm = dynamic(() => import("./Forms/ParentForm"), {
-  loading: () => <h1>Loading...</h1>
+  loading: () => <h1>Loading...</h1>,
 });
-
 
 // Mapping table → form component
 const formMapper: Record<
@@ -48,7 +47,7 @@ const FormModal = ({
     | "announcement";
   type: "update" | "create" | "delete";
   data?: any;
-  id?: number;
+  id?: string | number;
 }) => {
   const size = type === "create" ? "w-8 h-8" : "w-7 h-7";
   const bgColor =
