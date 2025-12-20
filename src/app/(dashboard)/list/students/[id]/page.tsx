@@ -186,7 +186,7 @@ const SingleStudentPage = () => {
                 Student's Results
               </Link>
               <Link
-                href="/"
+                href={`/list/teachers?classId=${2}`}
                 className="p-2 rounded-md bg-sanikaPurpleLight hover:shadow-md"
               >
                 Student's Teachers
