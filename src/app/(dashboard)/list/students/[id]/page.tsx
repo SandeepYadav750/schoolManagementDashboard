@@ -168,19 +168,19 @@ const SingleStudentPage = () => {
             <h1 className="text-lg font-semibold">Shortcut</h1>
             <div className="flex flex-wrap gap-4 mt-4 text-xs text-gray-500">
               <Link
-                href="/"
+                href={`/list/lessons?classId=${2}`}
                 className="p-2 rounded-md bg-sanikaSkyLight hover:shadow-md"
               >
                 Student's Lessons
               </Link>
               <Link
-                href="/"
+                href={`/list/exams?classId=${2}`}
                 className="p-2 rounded-md bg-sanikaYellowLight hover:shadow-md"
               >
                 Student's Exams
               </Link>
               <Link
-                href="/"
+                href={`/list/results?classId=${2}`}
                 className="p-2 rounded-md bg-sanikaPurpleLight hover:shadow-md"
               >
                 Student's Results
@@ -192,7 +192,7 @@ const SingleStudentPage = () => {
                 Student's Teachers
               </Link>
               <Link
-                href="/"
+                href={`/list/assignments?classId=${2}`}
                 className="p-2 rounded-md bg-sanikaSkyLight hover:shadow-md"
               >
                 Student's Assignments

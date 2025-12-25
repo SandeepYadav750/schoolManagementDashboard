@@ -2,65 +2,110 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
+import { Announcement, Class, Prisma } from "@/generated/prisma";
 import { role, announcementsData } from "@/lib/data";
+import { prisma } from "@/lib/prisma";
+import { ITEM_PER_PAGE } from "@/lib/setting";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
-type Announcements = {
-  id: number;
-  title: string;
-  class: string;
-  date: string;
-};
+// type Announcements = {
+//   id: number;
+//   title: string;
+//   class: string;
+//   date: string;
+// };
 
-const AnnouncementsListpage = () => {
-  const columns: any = [
-    { header: "Title", accessories: "title" },
-    {
-      header: "Class",
-      accessories: "class",
-    },
-    {
-      header: "Date",
-      accessories: "date",
-      className: "hidden md:table-cell",
-    },
-    { header: "Actions", accessories: "action" },
-  ];
+type AnnouncementList = Announcement & {class:Class}
 
-  const renderRow = (item: Announcements) => (
-    <tr
-      key={item.id}
-      className="boder-b border-b-gray-200 text-sm even:bg-slate-50 hover:bg-sanikaPurpleLight"
-    >
-      <td className="flex align-top gap-2 py-4">
-        <div className="flex flex-col">
-          <h3 className="text-xs md:text-sm">{item.title}</h3>
-        </div>
-      </td>
-      <td className="text-xs md:text-sm">{item.class}</td>
-      <td className="hidden md:table-cell text-xs md:text-sm">{item.date}</td>
-      <td>
-        <div className="flex items-center gap-2">
-          {/* <Link href={`/list/student/${item.id}`}>
-            <button className="rounded-full w-7 h-7 bg-sanikaSky flex items-center justify-center ">
-              <Image src="/edit.png" alt="" width={14} height={14} />
-            </button>
-          </Link> */}
-          {role === "admin" && (
-            // <button className="rounded-full w-7 h-7 bg-sanikaPurple flex items-center justify-center ">
-            //   <Image src="/delete.png" alt="" width={14} height={14} />
-            // </button>
-            <>
-              <FormModal table="announcement" type="update" data={item} />
-              <FormModal table="announcement" type="delete" id={item.id} />
-            </>
-          )}
-        </div>
-      </td>
-    </tr>
-  );
+const columns: any = [
+  { header: "Title", accessories: "title" },
+  {
+    header: "Class",
+    accessories: "class",
+  },
+  {
+    header: "Date",
+    accessories: "date",
+    className: "hidden md:table-cell",
+  },
+  { header: "Actions", accessories: "action" },
+];
+
+const renderRow = (item: AnnouncementList) => (
+  <tr
+    key={item.id}
+    className="boder-b border-b-gray-200 text-sm even:bg-slate-50 hover:bg-sanikaPurpleLight"
+  >
+    <td className="flex align-top gap-2 py-4">
+      <div className="flex flex-col">
+        <h3 className="text-xs md:text-sm">{item.title}</h3>
+      </div>
+    </td>
+    <td className="text-xs md:text-sm">{item.class.name}</td>
+    <td className="hidden md:table-cell text-xs md:text-sm">{new Intl.DateTimeFormat("en-US").format(item.date)}</td>
+    <td>
+      <div className="flex items-center gap-2">
+        {/* <Link href={`/list/student/${item.id}`}>
+          <button className="rounded-full w-7 h-7 bg-sanikaSky flex items-center justify-center ">
+            <Image src="/edit.png" alt="" width={14} height={14} />
+          </button>
+        </Link> */}
+        {role === "admin" && (
+          // <button className="rounded-full w-7 h-7 bg-sanikaPurple flex items-center justify-center ">
+          //   <Image src="/delete.png" alt="" width={14} height={14} />
+          // </button>
+          <>
+            <FormModal table="announcement" type="update" data={item} />
+            <FormModal table="announcement" type="delete" id={item.id} />
+          </>
+        )}
+      </div>
+    </td>
+  </tr>
+);
+
+const AnnouncementsListpage = async ({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string } | undefined;
+}) => {
+  const { page, ...queryParams } = searchParams || {};
+
+  const p = page ? parseInt(page) : 1;
+
+  // url params conditions
+
+  const query: Prisma.AnnouncementWhereInput = {};
+
+  if (queryParams) {
+    for (const [key, value] of Object.entries(queryParams)) {
+      if (value !== "undefined") {
+        switch (key) {
+          case "search":
+            query.title = { contains: value, mode: "insensitive" };
+            break;
+          default:
+            break;
+        }
+      }
+    }
+  }
+
+  const [announcementData, announcementCount] = await prisma.$transaction([
+    prisma.announcement.findMany({
+      where: query,
+      include: {
+        class: true,
+      },
+      take: ITEM_PER_PAGE,
+      skip: (p - 1) * ITEM_PER_PAGE,
+    }),
+
+    prisma.announcement.count({ where: query }),
+  ]);
+
 
   return (
     <>
@@ -91,13 +136,9 @@ const AnnouncementsListpage = () => {
           </div>
         </div>
         {/* list section */}
-        <Table
-          columns={columns}
-          renderRow={renderRow}
-          data={announcementsData}
-        />
+        <Table columns={columns} renderRow={renderRow} data={announcementData} />
         {/* pagination section */}
-        <Pagination />
+        <Pagination page={p} count={announcementCount} />
       </div>
     </>
   );
