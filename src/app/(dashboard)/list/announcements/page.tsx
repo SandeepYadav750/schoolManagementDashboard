@@ -3,21 +3,50 @@ import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import { Announcement, Class, Prisma } from "@/generated/prisma";
-import { role, announcementsData } from "@/lib/data";
+// import { role, announcementsData } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/setting";
+import { getUserRole } from "@/lib/utils";
 import Image from "next/image";
-import Link from "next/link";
 import React from "react";
 
-// type Announcements = {
-//   id: number;
-//   title: string;
-//   class: string;
-//   date: string;
-// };
+type AnnouncementList = Announcement & { class: Class };
 
-type AnnouncementList = Announcement & {class:Class}
+const AnnouncementsListpage = async ({ searchParams,}: { searchParams: { [key: string]: string } | undefined}) => {
+  const { page, ...queryParams } = searchParams || {};
+  const p = page ? parseInt(page) : 1;
+
+  // url params conditions
+  const query: Prisma.AnnouncementWhereInput = {};
+  if (queryParams) {
+    for (const [key, value] of Object.entries(queryParams)) {
+      if (value !== "undefined") {
+        switch (key) {
+          case "search":
+            query.title = { contains: value, mode: "insensitive" };
+            break;
+          default:
+            break;
+        }
+      }
+    }
+  }
+
+  const { role } = await getUserRole();
+  
+  const [announcementData, announcementCount] = await prisma.$transaction([
+    prisma.announcement.findMany({
+      where: query,
+      include: {
+        class: true,
+      },
+      take: ITEM_PER_PAGE,
+      skip: (p - 1) * ITEM_PER_PAGE,
+    }),
+
+    prisma.announcement.count({ where: query }),
+  ]);
+
 
 const columns: any = [
   { header: "Title", accessories: "title" },
@@ -30,7 +59,8 @@ const columns: any = [
     accessories: "date",
     className: "hidden md:table-cell",
   },
-  { header: "Actions", accessories: "action" },
+
+  ...(role === "admin" ? [{ header: "Actions", accessories: "action" }] : []),
 ];
 
 const renderRow = (item: AnnouncementList) => (
@@ -44,7 +74,9 @@ const renderRow = (item: AnnouncementList) => (
       </div>
     </td>
     <td className="text-xs md:text-sm">{item.class.name}</td>
-    <td className="hidden md:table-cell text-xs md:text-sm">{new Intl.DateTimeFormat("en-US").format(item.date)}</td>
+    <td className="hidden md:table-cell text-xs md:text-sm">
+      {new Intl.DateTimeFormat("en-US").format(item.date)}
+    </td>
     <td>
       <div className="flex items-center gap-2">
         {/* <Link href={`/list/student/${item.id}`}>
@@ -65,47 +97,6 @@ const renderRow = (item: AnnouncementList) => (
     </td>
   </tr>
 );
-
-const AnnouncementsListpage = async ({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string } | undefined;
-}) => {
-  const { page, ...queryParams } = searchParams || {};
-
-  const p = page ? parseInt(page) : 1;
-
-  // url params conditions
-
-  const query: Prisma.AnnouncementWhereInput = {};
-
-  if (queryParams) {
-    for (const [key, value] of Object.entries(queryParams)) {
-      if (value !== "undefined") {
-        switch (key) {
-          case "search":
-            query.title = { contains: value, mode: "insensitive" };
-            break;
-          default:
-            break;
-        }
-      }
-    }
-  }
-
-  const [announcementData, announcementCount] = await prisma.$transaction([
-    prisma.announcement.findMany({
-      where: query,
-      include: {
-        class: true,
-      },
-      take: ITEM_PER_PAGE,
-      skip: (p - 1) * ITEM_PER_PAGE,
-    }),
-
-    prisma.announcement.count({ where: query }),
-  ]);
-
 
   return (
     <>
@@ -136,7 +127,11 @@ const AnnouncementsListpage = async ({
           </div>
         </div>
         {/* list section */}
-        <Table columns={columns} renderRow={renderRow} data={announcementData} />
+        <Table
+          columns={columns}
+          renderRow={renderRow}
+          data={announcementData}
+        />
         {/* pagination section */}
         <Pagination page={p} count={announcementCount} />
       </div>
