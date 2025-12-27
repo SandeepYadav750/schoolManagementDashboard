@@ -3,9 +3,10 @@ import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import { Class, Prisma, Teacher } from "@/generated/prisma";
-import { role, classesData } from "@/lib/data";
+// import { role, classesData } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/setting";
+import { getUserRole } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -19,6 +20,11 @@ import React from "react";
 // };
 
 type ClassList = Class & { supervisor: Teacher };
+
+const classesListpage = async ({ searchParams, }: { searchParams: { [key: string]: string } | undefined; }) => {
+  
+    //for actions column
+    const { role } = await getUserRole();
 
 const columns: any = [
   { header: "Class Name", accessories: "className" },
@@ -37,7 +43,7 @@ const columns: any = [
     accessories: "classTeacher",
     className: "hidden md:table-cell",
   },
-  { header: "Actions", accessories: "action" },
+  ...(role === "admin" ? [{ header: "Actions", accessories: "action" }] : []),
 ];
 
 const renderRow = (item: ClassList) => (
@@ -74,17 +80,10 @@ const renderRow = (item: ClassList) => (
   </tr>
 );
 
-const classesListpage = async ({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string } | undefined;
-}) => {
   const { page, ...queryParams } = searchParams || {};
-
   const p = page ? parseInt(page) : 1;
 
   // url params conditions
-
   const query: Prisma.ClassWhereInput = {};
 
   if (queryParams) {
@@ -101,6 +100,7 @@ const classesListpage = async ({
       }
     }
   }
+  
 
   const [classData, classCount] = await prisma.$transaction([
     prisma.class.findMany({
@@ -114,6 +114,7 @@ const classesListpage = async ({
 
     prisma.class.count({ where: query }),
   ]);
+
 
   return (
     <>

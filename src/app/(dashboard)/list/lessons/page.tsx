@@ -6,6 +6,7 @@ import { Class, Lesson, Prisma, Subject, Teacher } from "@/generated/prisma";
 import { role, lessonsData } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/setting";
+import { getUserRole } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -19,66 +20,65 @@ import React from "react";
 
 type LessonList = Lesson & { subject: Subject} & { class: Class} & { teacher: Teacher}
 
-const columns: any = [
-  { header: "Subject Name", accessories: "subjectName" },
-  {
-    header: "Class",
-    accessories: "class",
-  },
-  {
-    header: "Teacher",
-    accessories: "teacher",
-    className: "hidden md:table-cell",
-  },
-  { header: "Actions", accessories: "action" },
-];
 
-const renderRow = (item: LessonList) => (
-  <tr
-    key={item.id}
-    className="boder-b border-b-gray-200 text-sm even:bg-slate-50 hover:bg-sanikaPurpleLight"
-  >
-    <td className="flex align-top gap-2 py-4">
-      <div className="flex flex-col">
-        <h3 className="text-xs md:text-sm">{item.subject.name}</h3>
-      </div>
-    </td>
-    <td className="text-xs md:text-sm">{item.class.name}</td>
-    <td className="hidden md:table-cell text-xs md:text-sm">
-      {item.teacher.name} {item.teacher.surname}
-    </td>
-    <td>
-      <div className="flex items-center gap-2">
-        {/* <Link href={`/list/student/${item.id}`}>
-          <button className="rounded-full w-7 h-7 bg-sanikaSky flex items-center justify-center ">
-            <Image src="/edit.png" alt="" width={14} height={14} />
-          </button>
-        </Link> */}
-        {role === "admin" && (
-          // <button className="rounded-full w-7 h-7 bg-sanikaPurple flex items-center justify-center ">
-          //   <Image src="/delete.png" alt="" width={14} height={14} />
-          // </button>
-          <>
-            <FormModal table="lesson" type="update" data={item} />
-            <FormModal table="lesson" type="delete" id={item.id} />
-          </>
-        )}
-      </div>
-    </td>
-  </tr>
-);
+const LessonsListpage = async ({ searchParams, }: { searchParams: { [key: string]: string } | undefined; }) => {
+  
+  //for actions column
+    const { role } = await getUserRole();
+  
+  const columns: any = [
+    { header: "Subject Name", accessories: "subjectName" },
+    {
+      header: "Class",
+      accessories: "class",
+    },
+    {
+      header: "Teacher",
+      accessories: "teacher",
+      className: "hidden md:table-cell",
+    },
+    ...(role === "admin" ? [{ header: "Actions", accessories: "action" }] : []),
+  ];
+  
+  const renderRow = (item: LessonList) => (
+    <tr
+      key={item.id}
+      className="boder-b border-b-gray-200 text-sm even:bg-slate-50 hover:bg-sanikaPurpleLight"
+    >
+      <td className="flex align-top gap-2 py-4">
+        <div className="flex flex-col">
+          <h3 className="text-xs md:text-sm">{item.subject.name}</h3>
+        </div>
+      </td>
+      <td className="text-xs md:text-sm">{item.class.name}</td>
+      <td className="hidden md:table-cell text-xs md:text-sm">
+        {item.teacher.name} {item.teacher.surname}
+      </td>
+      <td>
+        <div className="flex items-center gap-2">
+          {/* <Link href={`/list/student/${item.id}`}>
+            <button className="rounded-full w-7 h-7 bg-sanikaSky flex items-center justify-center ">
+              <Image src="/edit.png" alt="" width={14} height={14} />
+            </button>
+          </Link> */}
+          {role === "admin" && (
+            // <button className="rounded-full w-7 h-7 bg-sanikaPurple flex items-center justify-center ">
+            //   <Image src="/delete.png" alt="" width={14} height={14} />
+            // </button>
+            <>
+              <FormModal table="lesson" type="update" data={item} />
+              <FormModal table="lesson" type="delete" id={item.id} />
+            </>
+          )}
+        </div>
+      </td>
+    </tr>
+  );
 
-const LessonsListpage = async ({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string } | undefined;
-}) => {
   const { page, ...queryParams } = searchParams || {};
-
   const p = page ? parseInt(page) : 1;
 
   // url params conditions
-
   const query: Prisma.LessonWhereInput = {};
 
   if (queryParams) {

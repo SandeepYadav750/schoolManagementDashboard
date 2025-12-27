@@ -6,6 +6,7 @@ import { Prisma, Exam, Subject, Class, Teacher } from "@/generated/prisma";
 import { role, examsData } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/setting";
+import { getUserRole } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -19,87 +20,98 @@ import React from "react";
 // };
 
 type ExamList = Exam & {
-  lesson: { subject: Subject, class: Class, teacher: Teacher };
+  lesson: { subject: Subject; class: Class; teacher: Teacher };
 };
-
-const columns: any = [
-  { header: "Subject Name", accessories: "subjectName" },
-  {
-    header: "Class",
-    accessories: "class",
-  },
-  {
-    header: "Teacher",
-    accessories: "teacher",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Date",
-    accessories: "date",
-    className: "hidden md:table-cell",
-  },
-  { header: "Actions", accessories: "action" },
-];
-
-const renderRow = (item: ExamList) => (
-  <tr
-    key={item.id}
-    className="boder-b border-b-gray-200 text-sm even:bg-slate-50 hover:bg-sanikaPurpleLight"
-  >
-    <td className="flex align-top gap-2 py-4">
-      <div className="flex flex-col">
-        <h3 className="text-xs md:text-sm">{item.lesson.subject.name}</h3>
-      </div>
-    </td>
-    <td className="text-xs md:text-sm">{item.lesson.class.name}</td>
-    <td className="hidden md:table-cell text-xs md:text-sm">{item.lesson.teacher.name}</td>
-    <td className="hidden md:table-cell text-xs md:text-sm">{new Intl.DateTimeFormat("en-US").format(item.startTime)}</td>
-    <td>
-      <div className="flex items-center gap-2">
-        {/* <Link href={`/list/student/${item.id}`}>
-          <button className="rounded-full w-7 h-7 bg-sanikaSky flex items-center justify-center ">
-            <Image src="/edit.png" alt="" width={14} height={14} />
-          </button>
-        </Link> */}
-        {role === "admin" && (
-          // <button className="rounded-full w-7 h-7 bg-sanikaPurple flex items-center justify-center ">
-          //   <Image src="/delete.png" alt="" width={14} height={14} />
-          // </button>
-          <>
-            <FormModal table="exam" type="update" data={item} />
-            <FormModal table="exam" type="delete" id={item.id} />
-          </>
-        )}
-      </div>
-    </td>
-  </tr>
-);
 
 const ExamsListpage = async ({
   searchParams,
 }: {
   searchParams: { [key: string]: string } | undefined;
 }) => {
-  const { page, ...queryParams } = searchParams || {};
+  //for actions column
+  const { role, userId } = await getUserRole();
 
+  const columns: any = [
+    { header: "Subject Name", accessories: "subjectName" },
+    {
+      header: "Class",
+      accessories: "class",
+    },
+    {
+      header: "Teacher",
+      accessories: "teacher",
+      className: "hidden md:table-cell",
+    },
+    {
+      header: "Date",
+      accessories: "date",
+      className: "hidden md:table-cell",
+    },
+    ...(role === "admin" || role === "teacher"
+      ? [{ header: "Actions", accessories: "action" }]
+      : []),
+  ];
+
+  const renderRow = (item: ExamList) => (
+    <tr
+      key={item.id}
+      className="boder-b border-b-gray-200 text-sm even:bg-slate-50 hover:bg-sanikaPurpleLight"
+    >
+      <td className="flex align-top gap-2 py-4">
+        <div className="flex flex-col">
+          <h3 className="text-xs md:text-sm">{item.lesson.subject.name}</h3>
+        </div>
+      </td>
+      <td className="text-xs md:text-sm">{item.lesson.class.name}</td>
+      <td className="hidden md:table-cell text-xs md:text-sm">
+        {item.lesson.teacher.name}
+      </td>
+      <td className="hidden md:table-cell text-xs md:text-sm">
+        {new Intl.DateTimeFormat("en-US").format(item.startTime)}
+      </td>
+      <td>
+        <div className="flex items-center gap-2">
+          {/* <Link href={`/list/student/${item.id}`}>
+            <button className="rounded-full w-7 h-7 bg-sanikaSky flex items-center justify-center ">
+              <Image src="/edit.png" alt="" width={14} height={14} />
+            </button>
+          </Link> */}
+          {(role === "admin" || role === "teacher") && (
+            // <button className="rounded-full w-7 h-7 bg-sanikaPurple flex items-center justify-center ">
+            //   <Image src="/delete.png" alt="" width={14} height={14} />
+            // </button>
+            <>
+              <FormModal table="exam" type="update" data={item} />
+              <FormModal table="exam" type="delete" id={item.id} />
+            </>
+          )}
+        </div>
+      </td>
+    </tr>
+  );
+
+  const { page, ...queryParams } = searchParams || {};
   const p = page ? parseInt(page) : 1;
 
   // url params conditions
-
   const query: Prisma.ExamWhereInput = {};
+
+  query.lesson = {};
 
   if (queryParams) {
     for (const [key, value] of Object.entries(queryParams)) {
       if (value !== "undefined") {
         switch (key) {
           case "classId":
-            query.lesson = { classId: parseInt(value) };
+            query.lesson.classId = parseInt(value);
             break;
           case "teacherId":
-            query.lesson = { teacherId: value };
+            query.lesson.teacherId = value;
             break;
           case "search":
-            query.lesson = { subject: { name: { contains: value, mode: "insensitive" } } };
+            query.lesson.subject = {
+              name: { contains: value, mode: "insensitive" },
+            };
             break;
           default:
             break;
@@ -108,14 +120,31 @@ const ExamsListpage = async ({
     }
   }
 
+  // ROLE BASE CONDITION
+  switch (role) {
+    case "admin":
+      break;
+    case "teacher":
+      query.lesson.teacherId = userId!;
+      break;
+    case "student":
+      query.lesson.class = { students: { some: { id: userId! } } };
+      break;
+    case "parent":
+      query.lesson.class = { students: { some: { parentId: userId! } } };
+      break;
+    default:
+      break;
+  }
+
   const [examData, examCount] = await prisma.$transaction([
     prisma.exam.findMany({
       where: query,
       include: {
         lesson: {
-          select:{
-          subject: { select: { name: true } },
-          class: { select: { name: true } },
+          select: {
+            subject: { select: { name: true } },
+            class: { select: { name: true } },
             teacher: { select: { name: true, surname: true } },
           },
         },

@@ -68,7 +68,7 @@ const AssignmentsListpage = async ({
   //for actions column
   const { role, userId } = await getUserRole();
 
-  //role condition
+  //role based condition
 
   switch (role) {
     case "admin":

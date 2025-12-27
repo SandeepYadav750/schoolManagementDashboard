@@ -6,6 +6,7 @@ import { Prisma } from "@/generated/prisma";
 import { role, resultsData } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/setting";
+import { getUserRole } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -22,82 +23,81 @@ type ResultList = {
       startTime: Date,
 };
 
-const columns: any = [
-  { header: "Title", accessories: "title" },
-  {
-    header: "Student",
-    accessories: "student",
-  },
-  {
-    header: "Score",
-    accessories: "core",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Teacher",
-    accessories: "teacher",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Class",
-    accessories: "class",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Date",
-    accessories: "date",
-    className: "hidden md:table-cell",
-  },
-  { header: "Actions", accessories: "action" },
-];
 
-const renderRow = (item: ResultList) => (
-  <tr
-    key={item.id}
-    className="boder-b border-b-gray-200 text-sm even:bg-slate-50 hover:bg-sanikaPurpleLight"
-  >
-    <td className="flex align-top gap-2 py-4">
-      <div className="flex flex-col">
-        <h3 className="text-xs md:text-sm">{item.title}</h3>
-      </div>
-    </td>
-    <td className=" text-xs md:text-sm">{item.studentName} {item.studentSurname}</td>
-    <td className="hidden md:table-cell text-xs md:text-sm">{item.score}</td>
-    <td className="hidden md:table-cell text-xs md:text-sm">{item.teacherName} {item.teacherSurname}</td>
-    <td className="hidden md:table-cell text-xs md:text-sm">{item.className}</td>
-    <td className="hidden md:table-cell text-xs md:text-sm">{new Intl.DateTimeFormat("en-US").format(item.startTime)}</td>
-    <td>
-      <div className="flex items-center gap-2">
-        {/* <Link href={`/list/student/${item.id}`}>
-          <button className="rounded-full w-7 h-7 bg-sanikaSky flex items-center justify-center ">
-            <Image src="/edit.png" alt="" width={14} height={14} />
-          </button>
-        </Link> */}
-        {role === "admin" && (
-          // <button className="rounded-full w-7 h-7 bg-sanikaPurple flex items-center justify-center ">
-          //   <Image src="/delete.png" alt="" width={14} height={14} />
-          // </button>
-          <>
-            <FormModal table="result" type="update" data={item} />
-            <FormModal table="result" type="delete" id={item.id} />
-          </>
-        )}
-      </div>
-    </td>
-  </tr>
-);
+const ResultsListpage = async ({ searchParams, }: { searchParams: { [key: string]: string } | undefined; }) => {
+    
+      //for actions column
+  const { role, userId } = await getUserRole();
+  
+  const columns: any = [
+    { header: "Title", accessories: "title" },
+    {
+      header: "Student",
+      accessories: "student",
+    },
+    {
+      header: "Score",
+      accessories: "core",
+      className: "hidden md:table-cell",
+    },
+    {
+      header: "Teacher",
+      accessories: "teacher",
+      className: "hidden md:table-cell",
+    },
+    {
+      header: "Class",
+      accessories: "class",
+      className: "hidden md:table-cell",
+    },
+    {
+      header: "Date",
+      accessories: "date",
+      className: "hidden md:table-cell",
+    },
+    ...(role === "admin" || role === "teacher" ? [{ header: "Actions", accessories: "action" }] : []),
+  ];
+  
+  const renderRow = (item: ResultList) => (
+    <tr
+      key={item.id}
+      className="boder-b border-b-gray-200 text-sm even:bg-slate-50 hover:bg-sanikaPurpleLight"
+    >
+      <td className="flex align-top gap-2 py-4">
+        <div className="flex flex-col">
+          <h3 className="text-xs md:text-sm">{item.title}</h3>
+        </div>
+      </td>
+      <td className=" text-xs md:text-sm">{item.studentName} {item.studentSurname}</td>
+      <td className="hidden md:table-cell text-xs md:text-sm">{item.score}</td>
+      <td className="hidden md:table-cell text-xs md:text-sm">{item.teacherName} {item.teacherSurname}</td>
+      <td className="hidden md:table-cell text-xs md:text-sm">{item.className}</td>
+      <td className="hidden md:table-cell text-xs md:text-sm">{new Intl.DateTimeFormat("en-US").format(item.startTime)}</td>
+      <td>
+        <div className="flex items-center gap-2">
+          {/* <Link href={`/list/student/${item.id}`}>
+            <button className="rounded-full w-7 h-7 bg-sanikaSky flex items-center justify-center ">
+              <Image src="/edit.png" alt="" width={14} height={14} />
+            </button>
+          </Link> */}
+          {(role === "admin" || role === "teacher") && (
+            // <button className="rounded-full w-7 h-7 bg-sanikaPurple flex items-center justify-center ">
+            //   <Image src="/delete.png" alt="" width={14} height={14} />
+            // </button>
+            <>
+              <FormModal table="result" type="update" data={item} />
+              <FormModal table="result" type="delete" id={item.id} />
+            </>
+          )}
+        </div>
+      </td>
+    </tr>
+  );
 
-const ResultsListpage = async ({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string } | undefined;
-}) => {
   const { page, ...queryParams } = searchParams || {};
-
   const p = page ? parseInt(page) : 1;
 
   // url params conditions
-
   const query: Prisma.ResultWhereInput = {};
 
   if (queryParams) {
@@ -119,6 +119,28 @@ const ResultsListpage = async ({
       }
     }
   }
+
+//role based condition
+
+  switch (role) {
+    case "admin":
+      break;
+    case "teacher":
+      query.OR = [
+        { exam: {lesson: {teacherId: userId! }}},
+        { assignment: {lesson: {teacherId: userId! }}},
+      ]
+      break;
+    case "student":
+      query.studentId = userId!;
+      break;
+    case "parent":
+      query.student = { parentId: userId! };
+      break;
+    default:
+      break;
+  }
+
 
   const [resultData, resultCount] = await prisma.$transaction([
     prisma.result.findMany({
@@ -186,7 +208,7 @@ const ResultsListpage = async ({
               <button className="w-8 h-8 flex items-center justify-center rounded-full bg-sanikaYellow">
                 <Image src="/sort.png" alt="filter" width={14} height={14} />
               </button>
-              {role === "admin" && (
+              {(role === "admin" || role === "teacher") && (
                 // <button className="w-8 h-8 flex items-center justify-center rounded-full bg-sanikaYellow">
                 //   <Image src="/plus.png" alt="filter" width={14} height={14} />
                 // </button>

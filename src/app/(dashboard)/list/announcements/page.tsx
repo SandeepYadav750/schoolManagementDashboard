@@ -12,7 +12,63 @@ import React from "react";
 
 type AnnouncementList = Announcement & { class: Class };
 
-const AnnouncementsListpage = async ({ searchParams,}: { searchParams: { [key: string]: string } | undefined}) => {
+const AnnouncementsListpage = async ({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string } | undefined;
+}) => {
+  const { role, userId } = await getUserRole();
+
+  const columns: any = [
+    { header: "Title", accessories: "title" },
+    {
+      header: "Class",
+      accessories: "class",
+    },
+    {
+      header: "Date",
+      accessories: "date",
+      className: "hidden md:table-cell",
+    },
+
+    ...(role === "admin" ? [{ header: "Actions", accessories: "action" }] : []),
+  ];
+
+  const renderRow = (item: AnnouncementList) => (
+    <tr
+      key={item.id}
+      className="boder-b border-b-gray-200 text-sm even:bg-slate-50 hover:bg-sanikaPurpleLight"
+    >
+      <td className="flex align-top gap-2 py-4">
+        <div className="flex flex-col">
+          <h3 className="text-xs md:text-sm">{item.title}</h3>
+        </div>
+      </td>
+      <td className="text-xs md:text-sm">{item.class?.name || "-"}</td>
+      <td className="hidden md:table-cell text-xs md:text-sm">
+        {new Intl.DateTimeFormat("en-US").format(item.date)}
+      </td>
+      <td>
+        <div className="flex items-center gap-2">
+          {/* <Link href={`/list/student/${item.id}`}>
+          <button className="rounded-full w-7 h-7 bg-sanikaSky flex items-center justify-center ">
+            <Image src="/edit.png" alt="" width={14} height={14} />
+          </button>
+        </Link> */}
+          {role === "admin" && (
+            // <button className="rounded-full w-7 h-7 bg-sanikaPurple flex items-center justify-center ">
+            //   <Image src="/delete.png" alt="" width={14} height={14} />
+            // </button>
+            <>
+              <FormModal table="announcement" type="update" data={item} />
+              <FormModal table="announcement" type="delete" id={item.id} />
+            </>
+          )}
+        </div>
+      </td>
+    </tr>
+  );
+
   const { page, ...queryParams } = searchParams || {};
   const p = page ? parseInt(page) : 1;
 
@@ -32,8 +88,20 @@ const AnnouncementsListpage = async ({ searchParams,}: { searchParams: { [key: s
     }
   }
 
-  const { role } = await getUserRole();
-  
+  // ROLE BASE CONDITION
+  const roleBasedCondition = {
+    teacher: { lessons: { some: { teacherId: userId! } } },
+    student: { students: { some: { id: userId! } } },
+    parent: { students: { some: { parentId: userId! } } },
+  };
+
+  query.OR = [
+    { classId: null },
+    {
+      class: roleBasedCondition[role as keyof typeof roleBasedCondition] || {},
+    },
+  ];
+
   const [announcementData, announcementCount] = await prisma.$transaction([
     prisma.announcement.findMany({
       where: query,
@@ -46,57 +114,6 @@ const AnnouncementsListpage = async ({ searchParams,}: { searchParams: { [key: s
 
     prisma.announcement.count({ where: query }),
   ]);
-
-
-const columns: any = [
-  { header: "Title", accessories: "title" },
-  {
-    header: "Class",
-    accessories: "class",
-  },
-  {
-    header: "Date",
-    accessories: "date",
-    className: "hidden md:table-cell",
-  },
-
-  ...(role === "admin" ? [{ header: "Actions", accessories: "action" }] : []),
-];
-
-const renderRow = (item: AnnouncementList) => (
-  <tr
-    key={item.id}
-    className="boder-b border-b-gray-200 text-sm even:bg-slate-50 hover:bg-sanikaPurpleLight"
-  >
-    <td className="flex align-top gap-2 py-4">
-      <div className="flex flex-col">
-        <h3 className="text-xs md:text-sm">{item.title}</h3>
-      </div>
-    </td>
-    <td className="text-xs md:text-sm">{item.class.name}</td>
-    <td className="hidden md:table-cell text-xs md:text-sm">
-      {new Intl.DateTimeFormat("en-US").format(item.date)}
-    </td>
-    <td>
-      <div className="flex items-center gap-2">
-        {/* <Link href={`/list/student/${item.id}`}>
-          <button className="rounded-full w-7 h-7 bg-sanikaSky flex items-center justify-center ">
-            <Image src="/edit.png" alt="" width={14} height={14} />
-          </button>
-        </Link> */}
-        {role === "admin" && (
-          // <button className="rounded-full w-7 h-7 bg-sanikaPurple flex items-center justify-center ">
-          //   <Image src="/delete.png" alt="" width={14} height={14} />
-          // </button>
-          <>
-            <FormModal table="announcement" type="update" data={item} />
-            <FormModal table="announcement" type="delete" id={item.id} />
-          </>
-        )}
-      </div>
-    </td>
-  </tr>
-);
 
   return (
     <>
