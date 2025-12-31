@@ -31,11 +31,11 @@ const LoginPage = () => {
     }
   }, [isLoaded, isSignedIn, user, router]);
 
-  console.log("user", user);
-  console.log("user", user?.username);
-  console.log("user", user?.firstName);
-  console.log("user", user?.hasImage);
-  console.log("user", user?.imageUrl);
+  // console.log("user", user);
+  // console.log("user", user?.username);
+  // console.log("user", user?.firstName);
+  // console.log("user", user?.hasImage);
+  // console.log("user", user?.imageUrl);
 
   // 🔥 Loader while Clerk initializes
   if (!isLoaded) {

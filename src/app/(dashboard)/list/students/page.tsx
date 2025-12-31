@@ -137,9 +137,9 @@ const StudentsListpage = async ({
 
     prisma.student.count({ where: query }),
   ]);
-  console.log("studentData", studentData);
-  console.log("searchParams", searchParams);
-  console.log("studentCount", studentCount);
+  // console.log("studentData", studentData);
+  // console.log("searchParams", searchParams);
+  // console.log("studentCount", studentCount);
 
   return (
     <>

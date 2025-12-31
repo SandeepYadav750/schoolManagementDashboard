@@ -144,9 +144,9 @@ const TeachersListpage = async ({ searchParams, }: { searchParams: { [key: strin
 
     prisma.teacher.count({ where: query }),
   ]);
-  console.log("teacherData", teacherData);
-  console.log("searchParams", searchParams);
-  console.log("teacherCount", teacherCount);
+  // console.log("teacherData", teacherData);
+  // console.log("searchParams", searchParams);
+  // console.log("teacherCount", teacherCount);
 
   return (
     <>
