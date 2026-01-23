@@ -1,7 +1,12 @@
 import Announcement from "@/components/Announcement";
-import BigCalender from "@/components/BigCalender";
+import BigCalenderContainer from "@/components/BigCalenderContainer";
+import { auth } from "@clerk/nextjs/server";
 
-const TeacherPage = () => {
+const TeacherPage = async () => {
+
+  const { userId } = await auth();
+  console.log("teacher userId", userId);
+
   return (
     <>
       <div className="flex gap-4 flex-col md:flex-row p-4">
@@ -9,7 +14,7 @@ const TeacherPage = () => {
         <div className="w-full md:w-2/3 h-full flex flex-col gap-8 bg-white rounded-md p-4">
           <div className="mb-4 ">
             <span className="text-lg font-semibold">Shedule</span>
-            <BigCalender />
+            <BigCalenderContainer type="teacherId" id={userId!} />
           </div>
         </div>
         {/* right side */}

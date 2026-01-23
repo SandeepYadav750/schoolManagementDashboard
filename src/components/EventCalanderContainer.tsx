@@ -2,10 +2,9 @@ import Image from "next/image";
 import EventList from "./EventList";
 import EvenetCalander from "./EventCalander";
 
-const EventCalanderContainer = async ({ searchParams }: { searchParams: { date?: string } }) => {
+const EventCalanderContainer = async ({ searchParams }: { searchParams: { [keys: string]: string | undefined } }) => {
     
-  const date = searchParams.date;
-
+const {date} = searchParams;
 
   return (
     <>

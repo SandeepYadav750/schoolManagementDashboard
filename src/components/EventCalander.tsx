@@ -14,15 +14,15 @@ const EvenetCalander = () => {
   const router = useRouter();
 
   // useEffect(() => {
-  //   // if (value instanceof Date) {
-  //   //   router.push(`?data=${value.toLocaleDateString('en-US')}`);
-  //   // }
   //   if (value instanceof Date) {
-  //     const formattedDate = value.toISOString().split("T")[0]; // YYYY-MM-DD
-  //     router.push(`?date=${formattedDate}`);
-  //   } else {
-  //     router.push(`/admin`);
+  //     router.push(`?data=${value.toLocaleDateString("en-US")}`);
   //   }
+  //   // if (value instanceof Date) {
+  //   //   const formattedDate = value.toISOString().split("T")[0]; // YYYY-MM-DD
+  //   //   router.push(`?date=${formattedDate}`);
+  //   // } else {
+  //   //   router.push(`/admin`);
+  //   // }
   // }, [value, router]);
 
   useEffect(() => {
