@@ -1,4 +1,4 @@
-import FormModal from "@/components/FormModal";
+import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
@@ -57,7 +57,8 @@ const renderRow = (item: ClassList) => (
       </div>
     </td>
     <td className="hidden md:table-cell">{item.capacity}</td>
-    <td className="hidden md:table-cell">{item.name[0]}</td>
+    {/* <td className="hidden md:table-cell">{item.name[0]}</td> */}
+    <td className="hidden md:table-cell">{item.gradeId}</td>
     <td className="hidden md:table-cell">{item.supervisor.name + " " + item.supervisor.surname }</td>
     <td>
       <div className="flex items-center gap-2">
@@ -71,8 +72,8 @@ const renderRow = (item: ClassList) => (
           //   <Image src="/delete.png" alt="" width={14} height={14} />
           // </button>
           <>
-            <FormModal table="class" type="update" data={item} />
-            <FormModal table="class" type="delete" id={item.id} />
+            <FormContainer table="class" type="update" data={item} />
+            <FormContainer table="class" type="delete" id={item.id} />
           </>
         )}
       </div>
@@ -136,7 +137,7 @@ const renderRow = (item: ClassList) => (
                 //   <Image src="/plus.png" alt="filter" width={14} height={14} />
                 // </button>
                 <>
-                  <FormModal table="class" type="create" />
+                  <FormContainer table="class" type="create" />
                 </>
               )}
             </div>

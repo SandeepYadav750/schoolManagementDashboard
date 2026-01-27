@@ -1,11 +1,12 @@
-import FormModal from "@/components/FormModal";
+import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import { Prisma, Subject, Teacher } from "@/generated/prisma";
-import { role, subjectsData } from "@/lib/data";
+// import { role, subjectsData } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/setting";
+import { getUserRole } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -16,9 +17,18 @@ import React from "react";
 //   teachers: string[];
 // };'
 
-type SubjectList = Subject & {teachers: Teacher[]}
+type SubjectList = Subject & { teachers: Teacher[] };
 
-const columns: any = [
+const SubjectsListpage = async ({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string } | undefined;
+  }) => {
+  
+  // role imported from lib/utils
+  const { role } = await getUserRole();
+  
+  const columns: any = [
   { header: "Subject Name", accessories: "subjectName" },
   {
     header: "Teachers",
@@ -38,7 +48,9 @@ const renderRow = (item: SubjectList) => (
         <h3 className="text-xs md:text-sm">{item.name}</h3>
       </div>
     </td>
-    <td className="text-xs md:text-sm">{item.teachers.map((teacher) => teacher.name).join(", ")}</td>
+    <td className="text-xs md:text-sm">
+      {item.teachers.map((teacher) => teacher.name).join(", ")}
+    </td>
     <td>
       <div className="flex items-center gap-2">
         {/* <Link href={`/list/student/${item.id}`}>
@@ -50,24 +62,19 @@ const renderRow = (item: SubjectList) => (
           // <button className="rounded-full w-7 h-7 bg-sanikaPurple flex items-center justify-center ">
           //   <Image src="/delete.png" alt="" width={14} height={14} />
           // </button>
-           <>
-            <FormModal table="subject" type="update" data={item} />
-            <FormModal table="subject" type="delete" id={item.id} />
+          <>
+            <FormContainer table="subject" type="update" data={item} />
+            <FormContainer table="subject" type="delete" id={item.id} />
           </>
         )}
       </div>
     </td>
   </tr>
 );
-
-const SubjectsListpage = async ({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string } | undefined;
-}) => {
+  
   const { page, ...queryParams } = searchParams || {};
-
   const p = page ? parseInt(page) : 1;
+
 
   // url params conditions
 
@@ -116,10 +123,10 @@ const SubjectsListpage = async ({
                 <Image src="/sort.png" alt="filter" width={14} height={14} />
               </button>
               {role === "admin" && (
-                // 
-                 <>
-              <FormModal table="subject" type="create"  />
-            </>
+                //
+                <>
+                  <FormContainer table="subject" type="create" />
+                </>
               )}
             </div>
           </div>

@@ -1,0 +1,81 @@
+import { prisma } from "@/lib/prisma";
+import FormModal from "./FormModal";
+
+export type FormsContainerProps = {
+  table:
+    | "teacher"
+    | "student"
+    | "parent"
+    | "subject"
+    | "class"
+    | "lesson"
+    | "exam"
+    | "assignment"
+    | "result"
+    | "attendance"
+    | "event"
+    | "announcement";
+  type: "update" | "create" | "delete";
+  data?: any;
+  id?: number | string;
+};
+
+const FormContainer = async ({
+  table,
+  type,
+  data,
+  id,
+}: FormsContainerProps) => {
+  let relatedData = {};
+
+  if (type !== "delete") {
+    switch (table) {
+      case "subject":
+        const subjectTeachers = await prisma.teacher.findMany({
+          select: { id: true, name: true, surname: true },
+        });
+        relatedData = { teachers: subjectTeachers };
+        break;
+
+      case "class":
+        const classGrade = await prisma.grade.findMany({
+          select: { id: true, level: true },
+        });
+        const classTeachers = await prisma.teacher.findMany({
+          select: { id: true,  name: true, surname: true },
+        });
+        relatedData = { teachers: classTeachers, grades: classGrade };
+            break;
+        
+        case "lesson":
+        const lessonClass = await prisma.class.findMany({
+          select: { id: true, name: true },
+        });
+        const lessonTeachers = await prisma.teacher.findMany({
+          select: { id: true,  name: true, surname: true },
+        });
+            const lessonSubject = await prisma.subject.findMany({
+          select: { id: true,  name: true },
+        });
+        relatedData = { teachers: lessonTeachers, classes: lessonClass, subjects: lessonSubject };
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  return (
+    <>
+      <FormModal
+        table={table}
+        type={type}
+        data={data}
+        id={id}
+        relatedData={relatedData}
+      />
+    </>
+  );
+};
+
+export default FormContainer;

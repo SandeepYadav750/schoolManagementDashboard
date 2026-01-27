@@ -1,4 +1,4 @@
-import FormModal from "@/components/FormModal";
+import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
@@ -8,7 +8,6 @@ import { prisma } from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/setting";
 import { getUserRole } from "@/lib/utils";
 import Image from "next/image";
-import Link from "next/link";
 import React from "react";
 
 // type Lessons = {
@@ -18,15 +17,20 @@ import React from "react";
 //   teacher: string;
 // };
 
-type LessonList = Lesson & { subject: Subject} & { class: Class} & { teacher: Teacher}
+type LessonList = Lesson & { subject: Subject } & { class: Class } & {
+  teacher: Teacher;
+};
 
-
-const LessonsListpage = async ({ searchParams, }: { searchParams: { [key: string]: string } | undefined; }) => {
-  
+const LessonsListpage = async ({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string } | undefined;
+}) => {
   //for actions column
-    const { role } = await getUserRole();
-  
+  const { role } = await getUserRole();
+
   const columns: any = [
+    { header: "Lesson Name", accessories: "lessonName" },
     { header: "Subject Name", accessories: "subjectName" },
     {
       header: "Class",
@@ -39,7 +43,7 @@ const LessonsListpage = async ({ searchParams, }: { searchParams: { [key: string
     },
     ...(role === "admin" ? [{ header: "Actions", accessories: "action" }] : []),
   ];
-  
+
   const renderRow = (item: LessonList) => (
     <tr
       key={item.id}
@@ -47,9 +51,10 @@ const LessonsListpage = async ({ searchParams, }: { searchParams: { [key: string
     >
       <td className="flex align-top gap-2 py-4">
         <div className="flex flex-col">
-          <h3 className="text-xs md:text-sm">{item.subject.name}</h3>
+          <h3 className="text-xs md:text-sm">{item.name}</h3>
         </div>
       </td>
+      <td className="text-xs md:text-sm">{item.subject.name}</td>
       <td className="text-xs md:text-sm">{item.class.name}</td>
       <td className="hidden md:table-cell text-xs md:text-sm">
         {item.teacher.name} {item.teacher.surname}
@@ -66,8 +71,8 @@ const LessonsListpage = async ({ searchParams, }: { searchParams: { [key: string
             //   <Image src="/delete.png" alt="" width={14} height={14} />
             // </button>
             <>
-              <FormModal table="lesson" type="update" data={item} />
-              <FormModal table="lesson" type="delete" id={item.id} />
+              <FormContainer table="lesson" type="update" data={item} />
+              <FormContainer table="lesson" type="delete" id={item.id} />
             </>
           )}
         </div>
@@ -93,9 +98,9 @@ const LessonsListpage = async ({ searchParams, }: { searchParams: { [key: string
             break;
           case "search":
             query.OR = [
-              {subject: {name:{ contains: value, mode: "insensitive" }}},
-              {teacher: {name:{ contains: value, mode: "insensitive" }}},
-            ]
+              { subject: { name: { contains: value, mode: "insensitive" } } },
+              { teacher: { name: { contains: value, mode: "insensitive" } } },
+            ];
             break;
           default:
             break;
@@ -108,9 +113,9 @@ const LessonsListpage = async ({ searchParams, }: { searchParams: { [key: string
     prisma.lesson.findMany({
       where: query,
       include: {
-        subject: {select: {name:true}},
-        class: {select: {name:true}},
-        teacher: {select: {name:true,surname:true}},
+        subject: { select: { name: true } },
+        class: { select: { name: true } },
+        teacher: { select: { name: true, surname: true } },
       },
       take: ITEM_PER_PAGE,
       skip: (p - 1) * ITEM_PER_PAGE,
@@ -118,7 +123,6 @@ const LessonsListpage = async ({ searchParams, }: { searchParams: { [key: string
 
     prisma.lesson.count({ where: query }),
   ]);
-
 
   return (
     <>
@@ -140,7 +144,7 @@ const LessonsListpage = async ({ searchParams, }: { searchParams: { [key: string
                 //   <Image src="/plus.png" alt="filter" width={14} height={14} />
                 // </button>
                 <>
-                  <FormModal table="lesson" type="create" />
+                  <FormContainer table="lesson" type="create" />
                 </>
               )}
             </div>

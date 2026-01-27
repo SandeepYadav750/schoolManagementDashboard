@@ -8,6 +8,7 @@ type InputFieldProps = {
   name: string;
   defaultValue?: string;
   error?: FieldError;
+  hidden?: boolean;
   inputProps?: InputHTMLAttributes<HTMLInputElement>;
 };
 
@@ -18,10 +19,11 @@ const InputFields = ({
   name,
   defaultValue,
   error,
+  hidden,
   inputProps,
 }: InputFieldProps) => {
   return (
-    <div className="flex-1 flex flex-col gap-2">
+    <div className={hidden ? "hidden" : "flex-1 flex flex-col gap-2"}>
       <label className="text-xs text-gray-700 ">{label}</label>
 
       <input

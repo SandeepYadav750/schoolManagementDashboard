@@ -5,7 +5,7 @@ import { currentUser } from "@clerk/nextjs/server";
 
 const Menu = async () => {
   const user = await currentUser();
-  console.log("menu user", user);
+  // console.log("menu user", user);
   const role = (user?.publicMetadata?.role as string) || "";
 
   const menuItems = [

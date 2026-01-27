@@ -1,10 +1,30 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 // import TeacherForm from "./Forms/TeacherForm";
 // import StudentForm from "./Forms/StudentForm";
 import dynamic from "next/dynamic";
+import { useFormState } from "react-dom";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
+import { deleteClass,  deleteLesson,  deleteSubject } from "@/lib/action";
+
+
+const deleteActionMap = {
+  subject: deleteSubject,
+  class: deleteClass,
+  teacher: deleteSubject,
+  parent: deleteSubject,
+  student: deleteSubject,
+  lesson: deleteLesson,
+  exam: deleteSubject,
+  assignment: deleteSubject,
+  result: deleteSubject,
+  attendance: deleteSubject,
+  event: deleteSubject,
+  announcement: deleteSubject,
+};
 
 const TeacherForm = dynamic(() => import("./Forms/TeacherForm"), {
   loading: () => <h1>Loading...</h1>
@@ -15,16 +35,28 @@ const StudentForm = dynamic(() => import("./Forms/StudentForm"), {
 const ParentForm = dynamic(() => import("./Forms/ParentForm"), {
   loading: () => <h1>Loading...</h1>
 });
+const SubjectForm = dynamic(() => import("./Forms/SubjectForm"), {
+  loading: () => <h1>Loading...</h1>
+});
+const ClassForm = dynamic(() => import("./Forms/ClassForm"), {
+  loading: () => <h1>Loading...</h1>
+});
+const LessonForm = dynamic(() => import("./Forms/LessonForm"), {
+  loading: () => <h1>Loading...</h1>
+});
 
 
 // Mapping table → form component
 const formMapper: Record<
   string,
-  (type: "update" | "create", data?: any) => JSX.Element
+  (setOpen: Dispatch<SetStateAction<boolean>>, type: "update" | "create", data?: any, relatedData?: any) => JSX.Element
 > = {
-  teacher: (type, data) => <TeacherForm type={type} data={data} />,
-  student: (type, data) => <StudentForm type={type} data={data} />,
-  parent: (type, data) => <ParentForm type={type} data={data} />,
+  // teacher: (setOpen, type, data, relatedData) => <TeacherForm setOpen={setOpen} type={type} data={data} relatedData={relatedData} />,
+  // student: (setOpen, type, data, relatedData) => <StudentForm setOpen={setOpen} type={type} data={data} relatedData={relatedData} />,
+  // parent: (setOpen, type, data, relatedData) => <ParentForm setOpen={setOpen} type={type} data={data} relatedData={relatedData} />,
+  subject: (setOpen, type, data, relatedData) => <SubjectForm setOpen={setOpen} type={type} data={data} relatedData={relatedData} />,
+  class: (setOpen, type, data, relatedData) => <ClassForm setOpen={setOpen} type={type} data={data} relatedData={relatedData} />,
+  lesson: (setOpen, type, data, relatedData) => <LessonForm setOpen={setOpen} type={type} data={data} relatedData={relatedData} />,
 };
 
 const FormModal = ({
@@ -32,6 +64,7 @@ const FormModal = ({
   type,
   data,
   id,
+  relatedData,
 }: {
   table:
     | "teacher"
@@ -48,7 +81,8 @@ const FormModal = ({
     | "announcement";
   type: "update" | "create" | "delete";
   data?: any;
-  id?: number | string;
+    id?: number | string;
+  relatedData?: any;
 }) => {
   const size = type === "create" ? "w-8 h-8" : "w-7 h-7";
   const bgColor =
@@ -61,10 +95,30 @@ const FormModal = ({
   const [open, setOpen] = useState(false);
 
   const Form = () => {
+
+  const [State, FormsAction] = useFormState(deleteActionMap[table], {
+    success: false,
+    error: false,
+  });
+
+  const router = useRouter();
+
+  useEffect(() => {
+    if (State.success) {
+      // Reset form or show success message
+      toast.success(
+        `subject deleted successfully`
+      );
+      router.refresh();
+      setOpen(false);
+    }
+  });
+
     // Delete modal
     if (type === "delete" && id) {
       return (
-        <form className="bg-white flex flex-col gap-4 p-4">
+        <form action={FormsAction} className="bg-white flex flex-col gap-4 p-4">
+          <input type="text | number" hidden name="id" value={id} />
           <span className="text-center font-medium text-black">
             All the data will be lost. Are you sure you want to delete this{" "}
             {table}?
@@ -78,7 +132,7 @@ const FormModal = ({
 
     // Create / Update Form
     if ((type === "create" || type === "update") && formMapper[table]) {
-      return formMapper[table](type, data);
+      return formMapper[table](setOpen, type, data, relatedData);
     }
 
     return <p className="text-center text-gray-600">Form not found</p>;
