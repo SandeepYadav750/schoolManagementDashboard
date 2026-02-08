@@ -5,7 +5,7 @@ import { role, teachersData } from "@/lib/data";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import FormModal from "@/components/FormModal";
+import FormContainer from "@/components/FormContainer";
 import { Class, Prisma, Subject, Teacher } from "../../../../generated/prisma";
 import { prisma } from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/setting";
@@ -99,7 +99,7 @@ const TeachersListpage = async ({ searchParams, }: { searchParams: { [key: strin
             // <button className="rounded-full w-7 h-7 bg-sanikaPurple flex items-center justify-center ">
             //   <Image src="/delete.png" alt="" width={14} height={14} />
             // </button>
-            <FormModal table="teacher" type="delete" id={item.id} />
+            <FormContainer table="teacher" type="delete" id={item.id} />
           )}
         </div>
       </td>
@@ -169,7 +169,7 @@ const TeachersListpage = async ({ searchParams, }: { searchParams: { [key: strin
                 // <button className="w-8 h-8 flex items-center justify-center rounded-full bg-sanikaYellow">
                 //   <Image src="/plus.png" alt="filter" width={14} height={14} />
                 // </button>
-                <FormModal table="teacher" type="create" />
+                <FormContainer table="teacher" type="create" />
               )}
             </div>
           </div>

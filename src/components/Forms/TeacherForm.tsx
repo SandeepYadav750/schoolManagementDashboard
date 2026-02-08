@@ -2,61 +2,64 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import z from "zod";
 import InputFields from "../InputFields";
 import Image from "next/image";
-
-const schema = z.object({
-  userName: z
-    .string()
-    .min(3, { message: "UserName must be atleast 3 char long." })
-    .max(255, { message: "UserName must be atmost 255 char long." }),
-  email: z.string().email({ message: "Invalid Email address." }),
-  password: z
-    .string()
-    .min(6, { message: "password must be atleast 6 char long." }),
-  firstName: z
-    .string()
-    .min(3, { message: "firstName must be atleast 3 char long." })
-    .max(255, { message: "firstName must be atmost 255 char long." }),
-  lastName: z
-    .string()
-    .min(3, { message: "lastName must be atleast 3 char long." })
-    .max(255, { message: "lastName must be atmost 255 char long." }),
-  phone: z
-    .string()
-    .min(10, { message: "Phone No. must be atleast 10 char long." })
-    .max(12, { message: "Phone No. must be atmost 12 length." }),
-  address: z
-    .string()
-    .min(3, { message: "Address must be atleast 3 char long." })
-    .max(255, { message: "Address must be atmost 255 char long." }),
-  bloodType: z.string().min(1, { message: "BloodType is required." }),
-  birthday: z.string().date({ message: "Birthday is required." }),
-  sex: z.enum(["male", "female"], { message: "sex is required" }),
-  img: z.instanceof(File, { message: "Image is required" }),
-});
-
-type Inputs = z.infer<typeof schema>;
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { useFormState } from "react-dom";
+import { createTeacher, updateTeacher } from "@/lib/action";
+import { TeacherInputs, teacherSchema } from "@/lib/formValidationSchema";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
+import { CldUploadWidget } from "next-cloudinary";
 
 const TeacherForm = ({
   data,
   type,
+  setOpen,
+  relatedData,
 }: {
   data?: any;
   type: "create" | "update";
+  setOpen: Dispatch<SetStateAction<boolean>>;
+  relatedData?: any;
 }) => {
   const {
     register,
     formState: { errors },
     handleSubmit,
-  } = useForm<Inputs>({
-    resolver: zodResolver(schema),
+  } = useForm({
+    resolver: zodResolver(teacherSchema),
   });
 
+  const [img, setImg] = useState<any>();
+
+  const [State, FormsAction] = useFormState(
+    type === "create" ? createTeacher : updateTeacher,
+    {
+      success: false,
+      error: false,
+    }
+  );
+
   const onsubmit = handleSubmit((data) => {
-    // console.log("data", data);
+    console.log("data", data);
+    FormsAction({ ...data, img: img?.secure_url });
   });
+
+  const router = useRouter();
+
+  useEffect(() => {
+    if (State.success) {
+      // Reset form or show success message
+      toast.success(
+        `teacher ${type === "create" ? "created" : "updated"} successfully`
+      );
+      router.refresh();
+      setOpen(false);
+    }
+  });
+
+  const { subjects } = relatedData;
 
   return (
     <>
@@ -64,17 +67,20 @@ const TeacherForm = ({
         onSubmit={onsubmit}
         className="flex flex-col gap-4 h-[600px] md:h-auto overflow-auto"
       >
-        <h1 className="text-xl font-semibold">Create A new Teacher</h1>
+        <h1 className="text-xl font-semibold">
+          {" "}
+          {type === "create" ? "Create A new Teacher" : "Update Teacher"}
+        </h1>
         <span className="text-sm font-medium text-gray-400">
           Additional Information
         </span>
         <div className="flex flex-wrap items-center justify-center gap-4  px-2">
           <InputFields
             label="UserName"
-            name="userName"
-            defaultValue={data?.userName}
+            name="username"
+            defaultValue={data?.username}
             register={register}
-            error={errors?.userName}
+            error={errors?.username}
           />
           <InputFields
             label="Email"
@@ -98,17 +104,17 @@ const TeacherForm = ({
         <div className="flex flex-wrap items-center justify-center gap-4  px-2">
           <InputFields
             label="First Name"
-            name="firstName"
-            defaultValue={data?.firstName}
+            name="name"
+            defaultValue={data?.name}
             register={register}
-            error={errors?.firstName}
+            error={errors?.name}
           />
           <InputFields
             label="Last Name"
-            name="lastName"
-            defaultValue={data?.lastName}
+            name="surname"
+            defaultValue={data?.surname}
             register={register}
-            error={errors?.lastName}
+            error={errors?.surname}
           />
           <InputFields
             label="Phone No."
@@ -134,22 +140,31 @@ const TeacherForm = ({
           <InputFields
             label="Birthday"
             name="birthday"
-            defaultValue={data?.birthday}
+            defaultValue={data?.birthday.toISOString().split("T")[0]}
             register={register}
-            error={errors?.birthday}
+            error={errors?.birthday as any}
             type="date"
           />
+          {data && (
+            <InputFields
+              label="id"
+              name="id"
+              defaultValue={data?.id}
+              register={register}
+              error={errors?.id as any}
+              hidden
+            />
+          )}
           <div className="w-full flex items-center justify-between md:flex-row gap-2">
             <div className=" flex flex-col gap-2">
               <label className="text-xs text-gray-700">Sex</label>
               <select
-                id="cars"
                 className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm"
                 defaultValue={data?.sex}
                 {...register("sex")}
               >
-                <option value="male">Male</option>
-                <option value="female">Female</option>
+                <option value="MALE">Male</option>
+                <option value="FEMALE">Female</option>
               </select>
               {errors.sex?.message && (
                 <p className="text-red-500 text-xs">
@@ -158,19 +173,32 @@ const TeacherForm = ({
               )}
             </div>
             <div className=" flex flex-col gap-2">
-              <label
-                className="text-xs text-gray-700 mb-2 flex item-center gap-4 cursor-pointer"
-                htmlFor="img"
+              <label className="text-xs text-gray-700">Subject</label>
+              <select
+                multiple
+                id="subjects"
+                className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm"
+                defaultValue={data?.subjects}
+                {...register("subjects")}
               >
-                <Image
-                  src="/upload.png"
-                  alt="upload file"
-                  width={28}
-                  height={28}
-                />
-                <span>Upload a photo</span>
-              </label>
-              <input
+                {subjects.map((subject: { id: number; name: string }) => (
+                  <option
+                    key={subject.id}
+                    value={subject.id}
+                    className="cursor-pointer p-2 hover:bg-sanikaSkyLight "
+                  >
+                    {subject.name}
+                  </option>
+                ))}
+              </select>
+              {errors.subjects?.message && (
+                <p className="text-red-500 text-xs">
+                  {errors.subjects?.message.toString()}
+                </p>
+              )}
+            </div>
+            <div className=" flex flex-col gap-2">
+              {/* <input
                 id="img"
                 type="file"
                 {...register("img")}
@@ -180,10 +208,63 @@ const TeacherForm = ({
                 <p className="text-red-500 text-xs">
                   {errors.img?.message.toString()}
                 </p>
-              )}
+              )} */}
+
+              <CldUploadWidget
+                uploadPreset="school"
+                onSuccess={(result, widget) => {
+                  setImg(result.info);
+                  widget.close();
+                }}
+              >
+                {({ open }) => {
+                  return (
+                    <>
+                      <div
+                        className="text-xs text-gray-700 mb-2 flex item-center gap-4 cursor-pointer"
+                        onClick={() => open()}
+                      >
+                        <Image
+                          src="/upload.png"
+                          alt="upload file"
+                          width={28}
+                          height={28}
+                        />
+                        <span>Upload a photo</span>
+                      </div>
+                      <div className="w-20 h-20 rounded-full overflow-hidden bg-sanikaSkyLight border-2 border-sanikaSky ">
+                        <Image
+                          src={
+                            img ? img.secure_url : data?.img || "/noAvatar.png"
+                          }
+                          alt="Uploaded image"
+                          width={100}
+                          height={100}
+                          className="rounded-full "
+                        />
+                        {/* {img && (
+                        <div className="flex items-center gap-2">
+                          <Image
+                            src={img.secure_url}
+                            alt="Uploaded image"
+                            width={100}
+                            height={100}
+                          />
+                        </div>
+                      )} */}
+                      </div>
+                    </>
+                  );
+                }}
+              </CldUploadWidget>
             </div>
           </div>
         </div>
+        {State.error && (
+          <span className="text-red-600 text-xs">
+            {State.error ? State.error : "There was an error processing your Actions."}
+          </span>
+        )}
         <button className="bg-sanikaSky text-black p-2 rounded-md font-bold">
           {type === "create" ? "Create" : "Update"}
         </button>

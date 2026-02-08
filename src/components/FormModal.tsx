@@ -8,17 +8,17 @@ import dynamic from "next/dynamic";
 import { useFormState } from "react-dom";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { deleteClass,  deleteLesson,  deleteSubject } from "@/lib/action";
+import { deleteClass,  deleteExam,  deleteLesson,  deleteSubject, deleteTeacher } from "@/lib/action";
 
 
 const deleteActionMap = {
   subject: deleteSubject,
   class: deleteClass,
-  teacher: deleteSubject,
+  teacher: deleteTeacher,
   parent: deleteSubject,
   student: deleteSubject,
   lesson: deleteLesson,
-  exam: deleteSubject,
+  exam: deleteExam,
   assignment: deleteSubject,
   result: deleteSubject,
   attendance: deleteSubject,
@@ -44,6 +44,9 @@ const ClassForm = dynamic(() => import("./Forms/ClassForm"), {
 const LessonForm = dynamic(() => import("./Forms/LessonForm"), {
   loading: () => <h1>Loading...</h1>
 });
+const ExamForm = dynamic(() => import("./Forms/ExamForm"), {
+  loading: () => <h1>Loading...</h1>
+});
 
 
 // Mapping table → form component
@@ -51,12 +54,13 @@ const formMapper: Record<
   string,
   (setOpen: Dispatch<SetStateAction<boolean>>, type: "update" | "create", data?: any, relatedData?: any) => JSX.Element
 > = {
-  // teacher: (setOpen, type, data, relatedData) => <TeacherForm setOpen={setOpen} type={type} data={data} relatedData={relatedData} />,
+  teacher: (setOpen, type, data, relatedData) => <TeacherForm setOpen={setOpen} type={type} data={data} relatedData={relatedData} />,
   // student: (setOpen, type, data, relatedData) => <StudentForm setOpen={setOpen} type={type} data={data} relatedData={relatedData} />,
   // parent: (setOpen, type, data, relatedData) => <ParentForm setOpen={setOpen} type={type} data={data} relatedData={relatedData} />,
   subject: (setOpen, type, data, relatedData) => <SubjectForm setOpen={setOpen} type={type} data={data} relatedData={relatedData} />,
   class: (setOpen, type, data, relatedData) => <ClassForm setOpen={setOpen} type={type} data={data} relatedData={relatedData} />,
   lesson: (setOpen, type, data, relatedData) => <LessonForm setOpen={setOpen} type={type} data={data} relatedData={relatedData} />,
+  exam: (setOpen, type, data, relatedData) => <ExamForm setOpen={setOpen} type={type} data={data} relatedData={relatedData} />,
 };
 
 const FormModal = ({

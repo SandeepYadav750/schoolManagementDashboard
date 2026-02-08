@@ -98,7 +98,7 @@ const ClassForm = ({
             <label className="text-xs text-gray-700">Supervisor</label>
             <select
               className="ring-[1.5px] ring-gray-300 h-9 text-gray-500 rounded-md text-sm"
-              // defaultValue={data?.supervisorId}
+              defaultValue={data?.supervisorId}
               {...register("supervisorId")}
             >
               {teachers.map(
@@ -126,7 +126,7 @@ const ClassForm = ({
             <label className="text-xs text-gray-700">Grades</label>
             <select
               className="ring-[1.5px] ring-gray-300 h-9 text-gray-500 rounded-md text-sm"
-              // defaultValue={data?.gradeId}
+              defaultValue={data?.gradeId}
               {...register("gradeId")}
             >
               {grades.map((grade: { id: string; level: number }) => (
