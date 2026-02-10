@@ -159,7 +159,7 @@ const SingleTeacherPage = async (params: { params: { id: string } }) => {
           </div>
           {/* Shedule bottom */}
           <div className="mt-4 bg-white rounded-md p-4 ">
-            <h1 className="text-lg font-semibold">Teacher's Shedule</h1>
+            <h1 className="text-lg font-semibold">Teacher&apos;s Shedule</h1>
             <BigCalenderContainer type="teacherId" id={teacher.id} />
           </div>
         </div>
@@ -172,31 +172,31 @@ const SingleTeacherPage = async (params: { params: { id: string } }) => {
                 href={`/list/classes?supervisorId=${"teacher12"}`}
                 className="p-2 rounded-md bg-sanikaSkyLight hover:shadow-md"
               >
-                Teacher's Classes
+                Teacher&apos;s Classes
               </Link>
               <Link
                 href={`/list/students?teacherId=${"teacher2"}`}
                 className="p-2 rounded-md bg-sanikaPurpleLight hover:shadow-md"
               >
-                Teacher's Students
+                Teacher&apos;s Students
               </Link>
               <Link
                 href={`/list/exams?teacherId=${"teacher2"}`}
                 className="p-2 rounded-md bg-sanikaPurpleLight hover:shadow-md"
               >
-                Teacher's Exams
+                Teacher&apos;s Exams
               </Link>
               <Link
                 href={`/list/lessons?teacherId=${"teacher2"}`}
                 className="p-2 rounded-md bg-sanikaYellowLight hover:shadow-md"
               >
-                Teacher's Lessons
+                Teacher&apos;s Lessons
               </Link>
               <Link
                 href={`/list/assignments?teacherId=${"teacher2"}`}
                 className="p-2 rounded-md bg-sanikaSkyLight hover:shadow-md"
               >
-                Teacher's Assignments
+                Teacher&apos;s Assignments
               </Link>
             </div>
           </div>

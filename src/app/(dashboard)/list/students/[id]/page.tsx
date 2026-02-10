@@ -161,7 +161,7 @@ const SingleStudentPage = async (params: { params: { id: string } }) => {
           </div>
           {/* Shedule bottom */}
           <div className="mt-4 bg-white rounded-md p-4 ">
-            <h1 className="text-lg font-semibold">Student's Shedule</h1>
+            <h1 className="text-lg font-semibold">Student&apos;s Shedule</h1>
             <BigCalenderContainer type="classId" id={student.class.id} />
           </div>
         </div>
@@ -174,31 +174,31 @@ const SingleStudentPage = async (params: { params: { id: string } }) => {
                 href={`/list/lessons?classId=${2}`}
                 className="p-2 rounded-md bg-sanikaSkyLight hover:shadow-md"
               >
-                Student's Lessons
+                Student&apos;s Lessons
               </Link>
               <Link
                 href={`/list/exams?classId=${2}`}
                 className="p-2 rounded-md bg-sanikaYellowLight hover:shadow-md"
               >
-                Student's Exams
+                Student&apos;s Exams
               </Link>
               <Link
                 href={`/list/results?classId=${2}`}
                 className="p-2 rounded-md bg-sanikaPurpleLight hover:shadow-md"
               >
-                Student's Results
+                Student&apos;s Results
               </Link>
               <Link
                 href={`/list/teachers?classId=${2}`}
                 className="p-2 rounded-md bg-sanikaPurpleLight hover:shadow-md"
               >
-                Student's Teachers
+                Student&apos;s Teachers
               </Link>
               <Link
                 href={`/list/assignments?classId=${2}`}
                 className="p-2 rounded-md bg-sanikaSkyLight hover:shadow-md"
               >
-                Student's Assignments
+                Student&apos;s Assignments
               </Link>
             </div>
           </div>

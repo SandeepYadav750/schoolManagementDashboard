@@ -78,10 +78,10 @@ const AttendanceBarChartContainer = async () => {
         <div className="w-full ">
           <div className="flex flex-row md:flex-col items-end justify-end gap-2">
             <span className="text-xs font-semibold text-sanikaSky">
-              Today's Present: {totals.present}
+              Today&apos;s Present: {totals.present}
             </span>
             <span className="text-xs font-semibold text-sanikaYellow">
-              Today's Absent:{totals.absent}
+              Today&apos;s Absent:{totals.absent}
             </span>
           </div>
         </div>

@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import BigCalender from "./BigCalender";
 import { adjustScheduledToCurrentWeek } from "@/lib/utils";
 
-const BigCalenderContainer = async ({ type, id }: { type: "teacherId" | "classId"; id: string | number }) => {
+const BigCalenderContainer = async ({ type, id }: { type: "teacherId" | "classId" | "studentId" | "parentId"; id: string | number }) => {
     
     const dataRes = await prisma.lesson.findMany({
         where: {

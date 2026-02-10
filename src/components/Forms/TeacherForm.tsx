@@ -57,7 +57,7 @@ const TeacherForm = ({
       router.refresh();
       setOpen(false);
     }
-  });
+  },[State, router, setOpen,type]);
 
   const { subjects } = relatedData;
 

@@ -116,7 +116,7 @@ const FormModal = ({
       router.refresh();
       setOpen(false);
     }
-  });
+  },[State, router]);
 
     // Delete modal
     if (type === "delete" && id) {
