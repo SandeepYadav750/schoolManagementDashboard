@@ -56,7 +56,7 @@ const ExamForm = ({
   });
 
   // const { lessons } = relatedData;
-const lessons = relatedData?.lessons ?? [];
+  const lessons = relatedData?.lessons ?? [];
 
   return (
     <>
@@ -113,29 +113,23 @@ const lessons = relatedData?.lessons ?? [];
             )}
           </div>
           <div className="flex flex-1 flex-col gap-2">
-            <label className="text-xs text-gray-700">Start Time</label>
-            <input
-              type="date"
-              className="ring-[1.5px] ring-gray-300 h-9 px-2 text-gray-500 rounded-md text-sm"
-              {...register("startTime")}
+            <InputFields
+              label="Start Time"
+              name="startTime"
+              type={type === "create" ? "datetime-local" : "date"}
               defaultValue={data?.startTime.toISOString().split("T")[0]}
+              register={register}
+              error={errors?.startTime as any}
             />
-
-            {errors.startTime?.message && (
-              <p className="text-red-500 text-xs">
-                {errors.startTime.message.toString()}
-              </p>
-            )}
           </div>
           <div className="flex flex-1 flex-col gap-2">
             <label className="text-xs text-gray-700">End Time</label>
             <input
-              type="date"
+              type={type === "create" ? "datetime-local" : "date"}
               className="ring-[1.5px] ring-gray-300 h-9 px-2 text-gray-500 rounded-md text-sm"
               {...register("endTime")}
               defaultValue={data?.endTime.toISOString().split("T")[0]}
             />
-
             {errors.endTime?.message && (
               <p className="text-red-500 text-xs">
                 {errors.endTime.message.toString()}

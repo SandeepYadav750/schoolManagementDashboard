@@ -208,9 +208,23 @@ export const createExam = async (
   data: ExamInputs
 ) => {
   try {
-    await prisma.exam.create({
-      data,
-    });
+    const { role, userId } = await getUserRole();
+
+    if (role === "teacher") {
+      const teacherLesson = await prisma.lesson.findFirst({
+        where: { id: data.lessonId, teacherId: userId! as string },
+      });
+      if (!teacherLesson) {
+        return { success: false, error: true };
+      }
+
+      await prisma.exam.create({
+        data: {
+          ...data,
+          lessonId: data.lessonId,
+        },
+      });
+    }
 
     return { success: true, error: false };
   } catch (err) {
@@ -224,14 +238,28 @@ export const updateExam = async (
   data: ExamInputs
 ) => {
   try {
-    await prisma.exam.update({
-      where: { id: data.id },
-      data,
-    });
+  const { role, userId } = await getUserRole();
+
+    if (role === "teacher") {
+      const teacherLesson = await prisma.lesson.findFirst({
+        where: { id: data.lessonId, teacherId: userId! as string },
+      });
+      if (!teacherLesson) {
+        return { success: false, error: true };
+      }
+
+      await prisma.exam.update({
+        where: { id: data.id },
+        data: {
+          ...data,
+          lessonId: data.lessonId,
+        },
+      });
+    }
 
     return { success: true, error: false };
   } catch (err) {
-    console.error("Error creating exam:", err);
+    console.error("Error updating exam:", err);
     return { success: false, error: true };
   }
 };
@@ -242,9 +270,14 @@ export const deleteExam = async (
   //   console.log("Creating class with data:", data.name);
   const id = data.get("id") as string;
   try {
-   const { role, userId } = await getUserRole();
+    const { role, userId } = await getUserRole();
     await prisma.exam.delete({
-      where: { id: parseInt(id) },
+      where: {
+        id: parseInt(id),
+        ...(role === "teacher"
+          ? { lesson: { teacherId: userId! as string } }
+          : {}),
+      },
     });
     // revalidatePath("/list/classs");
     return { success: true, error: false };

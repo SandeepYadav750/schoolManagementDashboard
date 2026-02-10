@@ -65,7 +65,12 @@ const FormContainer = async ({
 
       case "exam":
 
+        const {role,userId} = await getUserRole();
+        
         const examLesson = await prisma.lesson.findMany({
+          where: {
+            ...(role === "teacher" && { teacherId: userId! as string }),
+          },
           select: { id: true, name: true},
         });
         relatedData = { lessons: examLesson };

@@ -171,7 +171,7 @@ const ExamsListpage = async ({
               <button className="w-8 h-8 flex items-center justify-center rounded-full bg-sanikaYellow">
                 <Image src="/sort.png" alt="filter" width={14} height={14} />
               </button>
-              {role === "admin" && (
+              {(role === "admin" || role === "teacher") && (
                 // <button className="w-8 h-8 flex items-center justify-center rounded-full bg-sanikaYellow">
                 //   <Image src="/plus.png" alt="filter" width={14} height={14} />
                 // </button>
