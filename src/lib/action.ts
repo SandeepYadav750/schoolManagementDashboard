@@ -5,11 +5,14 @@ import {
   classInputs,
   ExamInputs,
   LessonInputs,
+  StudentInputs,
   SubjectInputs,
   TeacherInputs,
 } from "./formValidationSchema";
 import { prisma } from "./prisma";
 import { clerkClient } from "@clerk/nextjs/server";
+import { normalizeOptional } from "./utils";
+import { getUserRole } from "@/lib/utils";
 
 type CurrentState = { success: boolean; error: boolean };
 
@@ -205,7 +208,6 @@ export const createExam = async (
   data: ExamInputs
 ) => {
   try {
-    // const { id, ...createData } = data;
     await prisma.exam.create({
       data,
     });
@@ -240,6 +242,7 @@ export const deleteExam = async (
   //   console.log("Creating class with data:", data.name);
   const id = data.get("id") as string;
   try {
+   const { role, userId } = await getUserRole();
     await prisma.exam.delete({
       where: { id: parseInt(id) },
     });
@@ -259,6 +262,36 @@ export const createTeacher = async (
 ) => {
   //   console.log("Creating class with data:", data.name);
   try {
+    // 1️⃣ Normalize fields
+    const email = normalizeOptional(data.email);
+    const phone = normalizeOptional(data.phone);
+
+    const uniqueFields: Array<{
+      field: "email" | "phone";
+      value: string | null;
+    }> = [
+      { field: "email", value: email },
+      { field: "phone", value: phone },
+    ];
+
+    for (const { field, value } of uniqueFields) {
+      if (!value) continue;
+
+      const existing = await prisma.student.findFirst({
+        where: {
+          [field]: value,
+          NOT: { id: data.id },
+        },
+      });
+
+      if (existing) {
+        return {
+          success: false,
+          error: `${field} already used by another Teacher`,
+        };
+      }
+    }
+
     // 1️⃣ Create Clerk user
     const client = await clerkClient(); // ✅ IMPORTANT
 
@@ -279,8 +312,8 @@ export const createTeacher = async (
         surname: data.surname,
         username: data.username,
         img: data.img,
-        email: data.email,
-        phone: data.phone,
+        email,
+        phone,
         address: data.address,
         bloodType: data.bloodType,
         birthday: data.birthday,
@@ -314,6 +347,36 @@ export const updateTeacher = async (
   //   console.log("Creating class with data:", data.name);
 
   try {
+    // 1️⃣ Normalize fields
+    const email = normalizeOptional(data.email);
+    const phone = normalizeOptional(data.phone);
+
+    const uniqueFields: Array<{
+      field: "email" | "phone";
+      value: string | null;
+    }> = [
+      { field: "email", value: email },
+      { field: "phone", value: phone },
+    ];
+
+    for (const { field, value } of uniqueFields) {
+      if (!value) continue;
+
+      const existing = await prisma.student.findFirst({
+        where: {
+          [field]: value,
+          NOT: { id: data.id },
+        },
+      });
+
+      if (existing) {
+        return {
+          success: false,
+          error: `${field} already used by another Teacher`,
+        };
+      }
+    }
+
     // 1️⃣ Create Clerk user
     const client = await clerkClient(); // ✅ IMPORTANT
 
@@ -321,11 +384,14 @@ export const updateTeacher = async (
       return { success: false, error: true };
     }
 
-    const password = typeof data.password === "string" && data.password.trim().length > 0 ? data.password : undefined;
-    
+    const password =
+      typeof data.password === "string" && data.password.trim().length > 0
+        ? data.password
+        : undefined;
+
     await client.users.updateUser(data.id, {
       username: data.username,
-       ...(password && { password }),
+      ...(password && { password }),
       firstName: data.name,
       lastName: data.surname,
     });
@@ -338,8 +404,8 @@ export const updateTeacher = async (
         surname: data.surname,
         username: data.username,
         img: data.img,
-        email: data.email,
-        phone: data.phone,
+        email,
+        phone,
         address: data.address,
         bloodType: data.bloodType,
         birthday: data.birthday,
@@ -377,7 +443,7 @@ export const deleteTeacher = async (
   //   console.log("Creating class with data:", data.name);
   const id = data.get("id") as string;
 
-    try {
+  try {
     const client = await clerkClient();
 
     // 1️⃣ Delete user from Clerk
@@ -391,6 +457,218 @@ export const deleteTeacher = async (
     return { success: true, error: false };
   } catch (err) {
     console.log("err deleting teacher:", err);
+    return { success: false, error: true };
+  }
+};
+
+// -------------------------------------------------------------------------------
+
+export const createStudent = async (
+  currentState: CurrentState,
+  data: StudentInputs
+) => {
+  //   console.log("Creating class with data:", data.name);
+  try {
+    const classItems = await prisma.class.findUnique({
+      where: { id: data.classId },
+      include: { _count: { select: { students: true } } },
+    });
+
+    if (classItems && classItems.capacity === classItems._count.students) {
+      return { success: false, error: true };
+    }
+
+    // 1️⃣ Normalize fields
+    const email = normalizeOptional(data.email);
+    const phone = normalizeOptional(data.phone);
+
+    const uniqueFields: Array<{
+      field: "email" | "phone";
+      value: string | null;
+    }> = [
+      { field: "email", value: email },
+      { field: "phone", value: phone },
+    ];
+
+    for (const { field, value } of uniqueFields) {
+      if (!value) continue;
+
+      const existing = await prisma.student.findFirst({
+        where: {
+          [field]: value,
+          NOT: { id: data.id },
+        },
+      });
+
+      if (existing) {
+        return {
+          success: false,
+          error: `${field} already used by another student`,
+        };
+      }
+    }
+
+    // 1️⃣ Create Clerk user
+    const client = await clerkClient(); // ✅ IMPORTANT
+
+    const user = await client.users.createUser({
+      username: data.username,
+      password: data.password,
+      firstName: data.name,
+      lastName: data.surname,
+      publicMetadata: {
+        role: "student",
+      },
+    });
+
+    await prisma.student.create({
+      data: {
+        id: user.id,
+        name: data.name,
+        surname: data.surname,
+        username: data.username,
+        img: data.img,
+        email,
+        phone,
+        address: data.address,
+        bloodType: data.bloodType,
+        birthday: data.birthday,
+        sex: data.sex,
+        gradeId: data.gradeId,
+        classId: data.classId,
+        parentId: data.parentId,
+      },
+    });
+    // revalidatePath("/list/students");
+    return { success: true, error: false };
+  } catch (err: any) {
+    console.log("err creating student:", err);
+    // ✅ Clerk specific error handling
+    if (err?.clerkError && err?.errors?.length) {
+      return {
+        success: false,
+        error: err.errors[0].longMessage || err.errors[0].message,
+      };
+    }
+    return { success: false, error: true };
+  }
+};
+
+export const updateStudent = async (
+  currentState: CurrentState,
+  data: StudentInputs
+) => {
+  //   console.log("Creating class with data:", data.name);
+
+  try {
+    // 1️⃣ Create Clerk user
+    const client = await clerkClient(); // ✅ IMPORTANT
+
+    if (!data.id) {
+      return { success: false, error: true };
+    }
+
+    // 1️⃣ Normalize fields
+    const email = normalizeOptional(data.email);
+    const phone = normalizeOptional(data.phone);
+
+    const uniqueFields: Array<{
+      field: "email" | "phone";
+      value: string | null;
+    }> = [
+      { field: "email", value: email },
+      { field: "phone", value: phone },
+    ];
+
+    for (const { field, value } of uniqueFields) {
+      if (!value) continue;
+
+      const existing = await prisma.student.findFirst({
+        where: {
+          [field]: value,
+          NOT: { id: data.id },
+        },
+      });
+
+      if (existing) {
+        return {
+          success: false,
+          error: `${field} already used by another student`,
+        };
+      }
+    }
+
+    const password =
+      typeof data.password === "string" && data.password.trim().length > 0
+        ? data.password
+        : undefined;
+
+    await client.users.updateUser(data.id, {
+      username: data.username,
+      ...(password && { password }),
+      firstName: data.name,
+      lastName: data.surname,
+    });
+
+    await prisma.student.update({
+      where: { id: data.id },
+      data: {
+        // ...(data.password !== "" && { password: data.password }), // Only update password if it's provided
+        name: data.name,
+        surname: data.surname,
+        username: data.username,
+        img: data.img,
+        email,
+        phone,
+        address: data.address,
+        bloodType: data.bloodType,
+        birthday: data.birthday,
+        sex: data.sex,
+        gradeId: data.gradeId,
+        classId: data.classId,
+        parentId: data.parentId,
+      },
+    });
+    // revalidatePath("/list/students");
+    return { success: true, error: false };
+  } catch (err: any) {
+    console.log("err creating student:", err);
+    // ✅ Clerk specific error handling
+    if (err?.clerkError && err?.errors?.length) {
+      return {
+        success: false,
+        error: err.errors[0].longMessage || err.errors[0].message,
+      };
+    }
+    // fallback
+    return {
+      success: false,
+      error: "Something went wrong. Please try again.",
+    };
+  }
+};
+
+export const deleteStudent = async (
+  currentState: CurrentState,
+  data: FormData
+) => {
+  //   console.log("Creating class with data:", data.name);
+  const id = data.get("id") as string;
+
+  try {
+    const client = await clerkClient();
+
+    // 1️⃣ Delete user from Clerk
+    await client.users.deleteUser(id);
+
+    // 2️⃣ Delete student from Prisma
+    await prisma.student.delete({
+      where: { id },
+    });
+    // revalidatePath("/list/students");
+    return { success: true, error: false };
+  } catch (err) {
+    console.log("err deleting student:", err);
     return { success: false, error: true };
   }
 };

@@ -8,7 +8,7 @@ import dynamic from "next/dynamic";
 import { useFormState } from "react-dom";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { deleteClass,  deleteExam,  deleteLesson,  deleteSubject, deleteTeacher } from "@/lib/action";
+import { deleteClass,  deleteExam,  deleteLesson,  deleteStudent,  deleteSubject, deleteTeacher } from "@/lib/action";
 
 
 const deleteActionMap = {
@@ -16,7 +16,7 @@ const deleteActionMap = {
   class: deleteClass,
   teacher: deleteTeacher,
   parent: deleteSubject,
-  student: deleteSubject,
+  student: deleteStudent,
   lesson: deleteLesson,
   exam: deleteExam,
   assignment: deleteSubject,
@@ -55,7 +55,7 @@ const formMapper: Record<
   (setOpen: Dispatch<SetStateAction<boolean>>, type: "update" | "create", data?: any, relatedData?: any) => JSX.Element
 > = {
   teacher: (setOpen, type, data, relatedData) => <TeacherForm setOpen={setOpen} type={type} data={data} relatedData={relatedData} />,
-  // student: (setOpen, type, data, relatedData) => <StudentForm setOpen={setOpen} type={type} data={data} relatedData={relatedData} />,
+  student: (setOpen, type, data, relatedData) => <StudentForm setOpen={setOpen} type={type} data={data} relatedData={relatedData} />,
   // parent: (setOpen, type, data, relatedData) => <ParentForm setOpen={setOpen} type={type} data={data} relatedData={relatedData} />,
   subject: (setOpen, type, data, relatedData) => <SubjectForm setOpen={setOpen} type={type} data={data} relatedData={relatedData} />,
   class: (setOpen, type, data, relatedData) => <ClassForm setOpen={setOpen} type={type} data={data} relatedData={relatedData} />,
@@ -111,7 +111,7 @@ const FormModal = ({
     if (State.success) {
       // Reset form or show success message
       toast.success(
-        `subject deleted successfully`
+        `${table} deleted successfully`
       );
       router.refresh();
       setOpen(false);

@@ -82,3 +82,41 @@ export const teacherSchema = z.object({
 });
 
 export type TeacherInputs = z.infer<typeof teacherSchema>;
+
+
+export const studentSchema = z.object({
+  id: z.string().optional(),
+  username: z
+    .string()
+    .min(3, { message: "UserName must be atleast 3 char long." })
+    .max(255, { message: "UserName must be atmost 255 char long." }),
+    password: z
+    .string()
+    .min(8, { message: "password must be atleast 8 char long." }).optional().or(z.literal("")),
+    name: z
+    .string()
+    .min(3, { message: "name must be atleast 3 char long." })
+    .max(255, { message: "name must be atmost 255 char long." }),
+    surname: z
+    .string()
+    .min(3, { message: "surname must be atleast 3 char long." })
+    .max(255, { message: "surname must be atmost 255 char long." }),
+    email: z.string().email({ message: "Invalid Email address." }).optional().or(z.literal("")),
+  phone: z
+    .string()
+    .min(10, { message: "Phone No. must be atleast 10 char long." })
+    .max(12, { message: "Phone No. must be atmost 12 length." }).optional(),
+  address: z
+    .string()
+    .min(3, { message: "Address must be atleast 3 char long." })
+    .max(255, { message: "Address must be atmost 255 char long." }),
+    img: z.string().optional(),
+  bloodType: z.string().min(1, { message: "BloodType is required." }),
+  birthday: z.coerce.date({ message: "Birthday is required." }),
+  sex: z.enum(["MALE", "FEMALE"], { message: "sex is required" }),
+  gradeId: z.coerce.number().min(1, { message: "Grade is Required." }),
+  classId: z.coerce.number().min(1, { message: "Class is Required." }),
+  parentId: z.string().min(1, { message: "Parent Id is Required." }),
+});
+
+export type StudentInputs = z.infer<typeof studentSchema>;
