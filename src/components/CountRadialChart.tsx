@@ -40,7 +40,7 @@ const CountRadialChart = ({boys, girls}: {boys:number, girls:number}) => {
         <Image
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
           src="/malefemale.png"
-          alt=""
+          alt="malefemale"
           width={50}
           height={50}
         />
