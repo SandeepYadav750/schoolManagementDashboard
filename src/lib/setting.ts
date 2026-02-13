@@ -6,9 +6,9 @@ type RouteAccessMap = {
 
 export const routeAccessMap: RouteAccessMap = {
   "/admin(.*)": ["admin"],
-  "/student(.*)": ["student"],
-  "/teacher(.*)": ["teacher"],
-  "/parent(.*)": ["parent"],
+  "/student(.*)": ["admin", "student"],
+  "/teacher(.*)": ["admin", "teacher"],
+  "/parent(.*)": ["admin", "parent"],
   "/list/teachers": ["admin", "teacher"],
   "/list/students": ["admin", "teacher"],
   "/list/parents": ["admin", "teacher"],
