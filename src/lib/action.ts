@@ -6,6 +6,7 @@ import {
   classInputs,
   ExamInputs,
   LessonInputs,
+  ResultInputs,
   StudentInputs,
   SubjectInputs,
   TeacherInputs,
@@ -373,6 +374,181 @@ export const deleteAssignment = async (
     return { success: false, error: true };
   }
 };
+
+// -------------------------------------------------------------------------------
+
+export const createResult = async (
+  currentState: CurrentState,
+  data: ResultInputs
+) => {
+  try {
+    const { role, userId } = await getUserRole();
+
+    if (role === "teacher") {
+      // Check assignment ownership
+      if (data.assignmentId) {
+        const assignment = await prisma.assignment.findFirst({
+          where: {
+            id: data.assignmentId,
+            lesson: {
+              teacherId: userId as string,
+            },
+          },
+        });
+
+        if (!assignment) {
+          return {
+            success: false,
+            error: true,
+          };
+        }
+      }
+
+      // Check exam ownership
+      if (data.examId) {
+        const exam = await prisma.exam.findFirst({
+          where: {
+            id: data.examId,
+            lesson: {
+              teacherId: userId as string,
+            },
+          },
+        });
+
+        if (!exam) {
+          return {
+            success: false,
+            error: true,
+          };
+        }
+      }
+    }
+
+    await prisma.result.create({
+      data: {
+        score: data.score,
+        studentId: data.studentId,
+        examId: data.examId || null,
+        assignmentId: data.assignmentId || null,
+      },
+    });
+
+    return { success: true, error: false };
+  } catch (err) {
+    console.log("err creating result:", err);
+    return { success: false, error: true };
+  }
+};
+
+
+
+export const updateResult = async (
+  currentState: CurrentState,
+  data: ResultInputs
+) => {
+  try {
+    const { role, userId } = await getUserRole();
+
+    if (role === "teacher") {
+      const existingResult = await prisma.result.findUnique({
+        where: { id: data.id },
+        include: {
+          assignment: {
+            include: { lesson: true },
+          },
+          exam: {
+            include: { lesson: true },
+          },
+        },
+      });
+
+      if (!existingResult) {
+        return { success: false, error: true };
+      }
+
+      const teacherOwnsAssignment =
+        existingResult.assignment?.lesson.teacherId === userId;
+
+      const teacherOwnsExam =
+        existingResult.exam?.lesson.teacherId === userId;
+
+      if (!teacherOwnsAssignment && !teacherOwnsExam) {
+        return {
+          success: false,
+          error: true,
+        };
+      }
+    }
+
+    await prisma.result.update({
+      where: { id: data.id },
+      data: {
+        score: data.score,
+        examId: data.examId || null,
+        assignmentId: data.assignmentId || null,
+      },
+    });
+
+    return { success: true, error: false };
+  } catch (err) {
+    console.log("err deleting student:", err);
+    return { success: false, error: true };
+  }
+};
+
+
+
+export const deleteResult = async (
+  currentState: CurrentState,
+  data: FormData
+) => {
+  const id = parseInt(data.get("id") as string);
+
+  try {
+    const { role, userId } = await getUserRole();
+
+    if (role === "teacher") {
+      const existingResult = await prisma.result.findUnique({
+        where: { id },
+        include: {
+          assignment: {
+            include: { lesson: true },
+          },
+          exam: {
+            include: { lesson: true },
+          },
+        },
+      });
+
+      if (!existingResult) {
+        return { success: false, error: true };
+      }
+
+      const teacherOwnsAssignment =
+        existingResult.assignment?.lesson.teacherId === userId;
+
+      const teacherOwnsExam =
+        existingResult.exam?.lesson.teacherId === userId;
+
+      if (!teacherOwnsAssignment && !teacherOwnsExam) {
+        return {
+          success: false,
+          error: true,
+        };
+      }
+    }
+
+    await prisma.result.delete({
+      where: { id },
+    });
+
+    return { success: true, error: false };
+  } catch (err) {
+    console.log("err deleting result:", err);
+    return { success: false, error: true };
+  }
+};
+
 
 // -------------------------------------------------------------------------------
 
