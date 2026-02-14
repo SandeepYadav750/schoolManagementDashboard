@@ -47,6 +47,16 @@ export const examSchema = z.object({
 
 export type ExamInputs = z.infer<typeof examSchema>;
 
+export const assignmentSchema = z.object({
+  id: z.coerce.number().optional(),
+  title: z.string().min(1, { message: "Title is Required." }).max(255, { message: "Title must be atmost 255 char long." }),
+  lessonId: z.coerce.number().min(1, { message: "lesson is Required." }),
+  startDate: z.coerce.date( { message: "Start time is required" }),
+  dueDate: z.coerce.date( { message: "Due Date is required" }),
+
+});
+
+export type AssignmentInputs = z.infer<typeof assignmentSchema>;
 
 export const teacherSchema = z.object({
   id: z.string().optional(),

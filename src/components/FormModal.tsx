@@ -8,7 +8,7 @@ import dynamic from "next/dynamic";
 import { useFormState } from "react-dom";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { deleteClass,  deleteExam,  deleteLesson,  deleteStudent,  deleteSubject, deleteTeacher } from "@/lib/action";
+import { deleteAssignment, deleteClass,  deleteExam,  deleteLesson,  deleteStudent,  deleteSubject, deleteTeacher } from "@/lib/action";
 
 
 const deleteActionMap = {
@@ -19,7 +19,7 @@ const deleteActionMap = {
   student: deleteStudent,
   lesson: deleteLesson,
   exam: deleteExam,
-  assignment: deleteSubject,
+  assignment: deleteAssignment,
   result: deleteSubject,
   attendance: deleteSubject,
   event: deleteSubject,
@@ -47,6 +47,9 @@ const LessonForm = dynamic(() => import("./Forms/LessonForm"), {
 const ExamForm = dynamic(() => import("./Forms/ExamForm"), {
   loading: () => <h1>Loading...</h1>
 });
+const AssignmentForm = dynamic(() => import("./Forms/AssignmentForm"), {
+  loading: () => <h1>Loading...</h1>
+});
 
 
 // Mapping table → form component
@@ -61,6 +64,7 @@ const formMapper: Record<
   class: (setOpen, type, data, relatedData) => <ClassForm setOpen={setOpen} type={type} data={data} relatedData={relatedData} />,
   lesson: (setOpen, type, data, relatedData) => <LessonForm setOpen={setOpen} type={type} data={data} relatedData={relatedData} />,
   exam: (setOpen, type, data, relatedData) => <ExamForm setOpen={setOpen} type={type} data={data} relatedData={relatedData} />,
+  assignment: (setOpen, type, data, relatedData) => <AssignmentForm setOpen={setOpen} type={type} data={data} relatedData={relatedData} />,
 };
 
 const FormModal = ({
