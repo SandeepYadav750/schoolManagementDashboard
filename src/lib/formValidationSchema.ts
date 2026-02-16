@@ -1,6 +1,7 @@
 import z from "zod";
 import { Day } from "../generated/prisma";
 import SubjectForm from "@/components/Forms/SubjectForm";
+import { title } from "process";
 
 
 export const subjectSchema = z.object({
@@ -65,6 +66,16 @@ export const resultSchema = z.object({
   studentId: z.coerce.string().min(1, { message: "student is Required." })
 });
 export type ResultInputs = z.infer<typeof resultSchema>;
+
+export const eventSchema = z.object({
+  id: z.coerce.number().optional(),
+  title: z.string().min(1, { message: "Event Title is Required." }).max(255, { message: "Event Title must be atmost 255 char long." }),
+  description: z.string().min(1, { message: "Event Description is Required." }).max(255, { message: "Event Description must be atmost 255 char long." }),
+  startTime: z.coerce.date( { message: "Start time is required" }),
+  endTime: z.coerce.date( { message: "End time is required" }),
+  classId: z.coerce.number().min(1, { message: "class is Required." }),
+});
+export type EventInputs = z.infer<typeof eventSchema>;
 
 export const teacherSchema = z.object({
   id: z.string().optional(),

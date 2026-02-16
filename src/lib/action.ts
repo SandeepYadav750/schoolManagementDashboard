@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import {
   AssignmentInputs,
   classInputs,
+  EventInputs,
   ExamInputs,
   LessonInputs,
   ResultInputs,
@@ -288,6 +289,98 @@ export const deleteExam = async (
     return { success: false, error: true };
   }
 };
+
+// -------------------------------------------------------------------------------
+
+// export const createEvent = async (
+//   currentState: CurrentState,
+//   data: EventInputs
+// ) => {
+//   try {
+//     const { role, userId } = await getUserRole();
+
+//     if (role === "teacher") {
+//       const teacherclass = await prisma.class.findFirst({
+//         where: { id: data.classId,
+//             supervisor: {
+//               supervisorId: userId as string,
+//             }, },
+//       });
+//       if (!teacherclass) {
+//         return { success: false, error: true };
+//       }
+
+//       await prisma.event.create({
+//         data: {
+//           ...data,
+//           classId: data.classId,
+//         },
+//       });
+//     }
+
+//     return { success: true, error: false };
+//   } catch (err) {
+//     console.error("Error creating event:", err);
+//     return { success: false, error: true };
+//   }
+// };
+
+// export const updateEvent = async (
+//   currentState: CurrentState,
+//   data: EventInputs
+// ) => {
+//   try {
+//   const { role, userId } = await getUserRole();
+
+//     if (role === "teacher") {
+//       const teacherclass = await prisma.class.findFirst({
+//         where: { id: data.classId,
+//             supervisor: {
+//               supervisorId: userId as string,
+//             }, },
+//       });
+//       if (!teacherclass) {
+//         return { success: false, error: true };
+//       }
+
+//       await prisma.event.update({
+//         where: { id: data.id },
+//         data: {
+//           ...data,
+//           classId: data.classId,
+//         },
+//       });
+//     }
+
+//     return { success: true, error: false };
+//   } catch (err) {
+//     console.error("Error updating event:", err);
+//     return { success: false, error: true };
+//   }
+// };
+// export const deleteEvent = async (
+//   currentState: CurrentState,
+//   data: FormData
+// ) => {
+//   //   console.log("Creating class with data:", data.name);
+//   const id = data.get("id") as string;
+//   try {
+//     const { role, userId } = await getUserRole();
+//     await prisma.event.delete({
+//       where: {
+//         id: parseInt(id),
+//         ...(role === "teacher"
+//           ? { class: { teacherId: userId! as string } }
+//           : {}),
+//       },
+//     });
+//     // revalidatePath("/list/classs");
+//     return { success: true, error: false };
+//   } catch (err) {
+//     console.log("err deleting event:", err);
+//     return { success: false, error: true };
+//   }
+// };
 
 // -------------------------------------------------------------------------------
 
